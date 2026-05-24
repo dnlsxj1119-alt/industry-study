@@ -3,7 +3,7 @@ import { Post, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { cn } from '../lib/utils';
+import { cn, getMemberBgClass } from '../lib/utils';
 
 interface CalendarPageProps {
   posts: Post[];
@@ -36,8 +36,11 @@ export function CalendarPage({ posts, commentCounts, bookmarkedPostIds, onToggle
     return isSame && authorMatch;
   });
 
-  const getPostCountForDate = (date: Date) => {
-    return posts.filter(post => isSameDay(new Date(post.created_at), date)).length;
+  const getAuthorsForDate = (date: Date): Member[] => {
+    const authors = posts
+      .filter(post => isSameDay(new Date(post.created_at), date))
+      .map(post => post.author);
+    return Array.from(new Set(authors));
   };
 
   return (
@@ -56,22 +59,27 @@ export function CalendarPage({ posts, commentCounts, bookmarkedPostIds, onToggle
             <div key={day} className="text-sm font-semibold text-gray-500 py-2">{day}</div>
           ))}
           {days.map((day, idx) => {
-            const count = getPostCountForDate(day);
+            const authors = getAuthorsForDate(day);
             const isSelected = isSameDay(day, selectedDate);
             return (
               <div 
                 key={idx} 
                 onClick={() => setSelectedDate(day)}
                 className={cn(
-                  "p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border",
+                  "p-1 md:p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border",
                   !isSameMonth(day, monthStart) ? "text-gray-300 bg-transparent border-transparent" : "text-gray-700 bg-gray-50 hover:bg-gray-100 border-transparent",
                   isSelected && "bg-primary-50 text-primary-700 border-primary-200 font-bold shadow-sm"
                 )}
               >
                 <span className="text-sm">{format(day, dateFormat)}</span>
-                {count > 0 && (
-                  <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-                )}
+                <div className="flex space-x-1 mt-1 h-1.5 min-h-[6px]">
+                  {authors.map(author => (
+                    <span 
+                      key={author} 
+                      className={cn("w-1.5 h-1.5 rounded-full", getMemberBgClass(author))}
+                    ></span>
+                  ))}
+                </div>
               </div>
             );
           })}
