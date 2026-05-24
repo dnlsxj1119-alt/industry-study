@@ -1,0 +1,60 @@
+import React from 'react';
+import { Post, Category } from '../types';
+import { CategoryTabs } from '../components/Board/CategoryTabs';
+import { PostCard } from '../components/Board/PostCard';
+
+interface BoardPageProps {
+  posts: Post[];
+  activeCategory: Category;
+  setActiveCategory: (cat: Category) => void;
+  commentCounts: Record<string, number>;
+  bookmarkedPostIds: Set<string>;
+  onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
+  onPostClick: (post: Post) => void;
+}
+
+export function BoardPage({
+  posts,
+  activeCategory,
+  setActiveCategory,
+  commentCounts,
+  bookmarkedPostIds,
+  onToggleBookmark,
+  onPostClick
+}: BoardPageProps) {
+  const categories: Category[] = ['전체', '반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
+  
+  const filteredPosts = activeCategory === '전체' 
+    ? posts 
+    : posts.filter(p => p.category === activeCategory);
+
+  return (
+    <div className="flex-1 min-w-0">
+      <div className="mb-6">
+        <CategoryTabs 
+          categories={categories} 
+          activeCategory={activeCategory} 
+          onSelect={setActiveCategory} 
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {filteredPosts.map(post => (
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            commentCount={commentCounts[post.id] || 0}
+            isBookmarked={bookmarkedPostIds.has(post.id)}
+            onBookmark={(e) => onToggleBookmark(e, post.id)}
+            onClick={() => onPostClick(post)}
+          />
+        ))}
+        {filteredPosts.length === 0 && (
+          <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
+            <p className="text-gray-500">이 카테고리에 아직 공유된 기사가 없습니다.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
