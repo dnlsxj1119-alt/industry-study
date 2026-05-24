@@ -7,13 +7,15 @@ import { cn, getMemberColorClasses, getMemberBorderClass, getMemberTextClass } f
 
 interface MemberPageProps {
   posts: Post[];
+  currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
-export function MemberPage({ posts, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick }: MemberPageProps) {
+export function MemberPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: MemberPageProps) {
   const [selectedMember, setSelectedMember] = useState<Member>('다연');
   const members: Member[] = ['다연', '유연', '준순'];
   
@@ -68,10 +70,12 @@ export function MemberPage({ posts, commentCounts, bookmarkedPostIds, onToggleBo
               <PostCard 
                 key={post.id} 
                 post={post} 
+                currentMember={currentMember}
                 commentCount={commentCounts[post.id] || 0}
                 isBookmarked={bookmarkedPostIds.has(post.id)}
                 onBookmark={(e) => onToggleBookmark(e, post.id)}
                 onClick={() => onPostClick(post)}
+                onEdit={onEdit}
               />
             ))}
             {memberPosts.length === 0 && (

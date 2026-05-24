@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Post, Comment, CommentType, Member } from '../../types';
-import { X, MessageCircle, ExternalLink, Bookmark } from 'lucide-react';
+import { X, MessageCircle, ExternalLink, Bookmark, Pencil } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,9 +10,10 @@ interface PostModalProps {
   post: Post;
   currentMember: Member;
   onClose: () => void;
+  onEdit: (post: Post) => void;
 }
 
-export function PostModal({ post, currentMember, onClose }: PostModalProps) {
+export function PostModal({ post, currentMember, onClose, onEdit }: PostModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<CommentType>('동의');
@@ -56,6 +57,7 @@ export function PostModal({ post, currentMember, onClose }: PostModalProps) {
   const createdTime = new Date(post.created_at).toLocaleTimeString('ko-KR', {
     hour: '2-digit', minute: '2-digit'
   });
+  const isEdited = post.updated_at && post.updated_at !== post.created_at;
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
@@ -73,6 +75,7 @@ export function PostModal({ post, currentMember, onClose }: PostModalProps) {
             <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{post.title}</h2>
             <div className="flex items-center space-x-3 text-sm text-gray-500 font-medium">
               <span>{createdDate} {createdTime}</span>
+              {isEdited && <span className="text-gray-400 text-xs bg-gray-100 px-1.5 py-0.5 rounded">수정됨</span>}
               {post.url && (
                 <>
                   <span className="text-gray-300">•</span>
@@ -83,9 +86,17 @@ export function PostModal({ post, currentMember, onClose }: PostModalProps) {
               )}
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors absolute top-4 right-4">
-            <X className="w-5 h-5" />
-          </button>
+          
+          <div className="absolute top-4 right-4 flex items-center space-x-2">
+            {post.author === currentMember && (
+              <button onClick={() => { onClose(); onEdit(post); }} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="수정">
+                <Pencil className="w-5 h-5" />
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="닫기">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content (Scrollable) */}

@@ -1,17 +1,19 @@
 import React from 'react';
-import { Post } from '../types';
+import { Post, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { Bookmark as BookmarkIcon } from 'lucide-react';
 
 interface BookmarkPageProps {
   posts: Post[];
+  currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
-export function BookmarkPage({ posts, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick }: BookmarkPageProps) {
+export function BookmarkPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: BookmarkPageProps) {
   const bookmarkedPosts = posts.filter(post => bookmarkedPostIds.has(post.id));
 
   return (
@@ -31,10 +33,12 @@ export function BookmarkPage({ posts, commentCounts, bookmarkedPostIds, onToggle
           <PostCard 
             key={post.id} 
             post={post} 
+            currentMember={currentMember}
             commentCount={commentCounts[post.id] || 0}
             isBookmarked={true}
             onBookmark={(e) => onToggleBookmark(e, post.id)}
             onClick={() => onPostClick(post)}
+            onEdit={onEdit}
           />
         ))}
         {bookmarkedPosts.length === 0 && (

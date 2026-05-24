@@ -1,17 +1,19 @@
 import React, { useMemo } from 'react';
-import { Post, Comment } from '../types';
+import { Post, Comment, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { MessageSquare, HelpCircle, AlertTriangle } from 'lucide-react';
 
 interface DiscussionPageProps {
   posts: Post[];
+  currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
-export function DiscussionPage({ posts, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick }: DiscussionPageProps) {
+export function DiscussionPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: DiscussionPageProps) {
   // We don't have global comments loaded in state easily without fetching all,
   // but for the sake of this UI, we can sort posts by commentCount.
   // In a real app we'd fetch specific comments and aggregate. 
@@ -43,10 +45,12 @@ export function DiscussionPage({ posts, commentCounts, bookmarkedPostIds, onTogg
             <PostCard 
               key={post.id} 
               post={post} 
+              currentMember={currentMember}
               commentCount={commentCounts[post.id] || 0}
               isBookmarked={bookmarkedPostIds.has(post.id)}
               onBookmark={(e) => onToggleBookmark(e, post.id)}
               onClick={() => onPostClick(post)}
+              onEdit={onEdit}
             />
           ))}
           {hotPosts.length === 0 && (

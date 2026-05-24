@@ -1,26 +1,30 @@
 import React from 'react';
-import { Post, Category } from '../types';
+import { Post, Category, Member } from '../types';
 import { CategoryTabs } from '../components/Board/CategoryTabs';
 import { PostCard } from '../components/Board/PostCard';
 
 interface BoardPageProps {
   posts: Post[];
+  currentMember: Member;
   activeCategory: Category;
   setActiveCategory: (cat: Category) => void;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
 export function BoardPage({
   posts,
+  currentMember,
   activeCategory,
   setActiveCategory,
   commentCounts,
   bookmarkedPostIds,
   onToggleBookmark,
-  onPostClick
+  onPostClick,
+  onEdit
 }: BoardPageProps) {
   const categories: Category[] = ['전체', '반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
   
@@ -43,10 +47,12 @@ export function BoardPage({
           <PostCard 
             key={post.id} 
             post={post} 
+            currentMember={currentMember}
             commentCount={commentCounts[post.id] || 0}
             isBookmarked={bookmarkedPostIds.has(post.id)}
             onBookmark={(e) => onToggleBookmark(e, post.id)}
             onClick={() => onPostClick(post)}
+            onEdit={onEdit}
           />
         ))}
         {filteredPosts.length === 0 && (

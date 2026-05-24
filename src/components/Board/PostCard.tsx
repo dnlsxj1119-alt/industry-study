@@ -1,6 +1,6 @@
 import React from 'react';
-import { Post } from '../../types';
-import { MessageCircle, Bookmark, ExternalLink } from 'lucide-react';
+import { Member, Post } from '../../types';
+import { MessageCircle, Bookmark, ExternalLink, Pencil } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -8,13 +8,15 @@ import { getMemberColorClasses, getMemberBorderClass } from '../../lib/utils';
 
 interface PostCardProps {
   post: Post;
+  currentMember: Member;
   commentCount: number;
   isBookmarked: boolean;
   onBookmark: (e: React.MouseEvent) => void;
   onClick: () => void;
+  onEdit: (post: Post) => void;
 }
 
-export function PostCard({ post, commentCount, isBookmarked, onBookmark, onClick }: PostCardProps) {
+export function PostCard({ post, currentMember, commentCount, isBookmarked, onBookmark, onClick, onEdit }: PostCardProps) {
   const categoryColors: Record<string, string> = {
     '반도체': 'bg-blue-100 text-blue-800 border-blue-200',
     'AI': 'bg-purple-100 text-purple-800 border-purple-200',
@@ -40,12 +42,23 @@ export function PostCard({ post, commentCount, isBookmarked, onBookmark, onClick
         <span className={cn("px-2.5 py-1 rounded-md text-xs font-semibold border", categoryColors[post.category] || categoryColors['경제/시장'])}>
           {post.category}
         </span>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onBookmark(e); }}
-          className={cn("p-1.5 rounded-full hover:bg-gray-100 transition-colors", isBookmarked ? "text-primary-600" : "text-gray-400")}
-        >
-          <Bookmark className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} />
-        </button>
+        <div className="flex items-center space-x-2">
+          {post.author === currentMember && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(post); }}
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
+              title="게시글 수정"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          )}
+          <button 
+            onClick={(e) => { e.stopPropagation(); onBookmark(e); }}
+            className={cn("p-1.5 rounded-full hover:bg-gray-100 transition-colors", isBookmarked ? "text-primary-600" : "text-gray-400")}
+          >
+            <Bookmark className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} />
+          </button>
+        </div>
       </div>
 
       <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{post.title}</h3>

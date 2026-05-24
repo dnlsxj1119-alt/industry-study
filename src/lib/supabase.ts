@@ -1,118 +1,161 @@
 import { createClient } from '@supabase/supabase-js';
-import { mockPosts, mockComments, mockBookmarks } from './mockData';
-import { Post, Comment, Bookmark, Member } from '../types';
+import type { Post, Comment, Bookmark } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const isSupabaseConfigured = supabaseUrl !== '' && supabaseAnonKey !== '';
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder'
+);
 
-// Local state for fallback when Supabase is not configured
-let localPosts = [...mockPosts];
-let localComments = [...mockComments];
-let localBookmarks = [...mockBookmarks];
-
-// Abstracted DB operations to handle fallback transparently
 export const api = {
   async getPosts(): Promise<Post[]> {
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
-      if (error) {
-        console.error('Error fetching posts:', error);
-        return localPosts;
-      }
-      return data;
-    }
-    return localPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  },
-
-  async addPost(post: Omit<Post, 'id' | 'created_at' | 'updated_at'>): Promise<Post> {
-    const newPost = {
-      ...post,
-      id: crypto.randomUUID(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    } as Post;
-
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('posts').insert([newPost]).select().single();
-      if (error) {
-        console.error('Error adding post:', error);
-      } else {
-        return data;
-      }
+    if (!isSupabaseConfigured) {
+      console.warn("Supabase is not configured. Returning empty posts.");
+      return [];
     }
     
-    localPosts = [newPost, ...localPosts];
-    return newPost;
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching posts:', error);
+      throw error;
+    }
+    return data || [];
+  },
+
+  async addPost(post: Omit<Post, 'id' | 'created_at' | 'updated_at'>) {
+    if (!isSupabaseConfigured) {
+      console.warn("Supabase is not configured. Cannot add post.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('posts')
+      .insert([{
+        ...post,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }]);
+      
+    if (error) {
+      console.error('Error adding post:', error);
+      throw error;
+    }
+  },
+
+  async updatePost(id: string, updates: Partial<Omit<Post, 'id' | 'created_at' | 'author'>>) {
+    if (!isSupabaseConfigured) {
+      console.warn("Supabase is not configured. Cannot update post.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('posts')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error updating post:', error);
+      throw error;
+    }
+  },
+
+  async deletePost(id: string) {
+    if (!isSupabaseConfigured) {
+      console.warn("Supabase is not configured. Cannot delete post.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting post:', error);
+      throw error;
+    }
   },
 
   async getComments(postId: string): Promise<Comment[]> {
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('comments').select('*').eq('post_id', postId).order('created_at', { ascending: true });
-      if (error) {
-        console.error('Error fetching comments:', error);
-        return localComments.filter(c => c.post_id === postId);
-      }
-      return data;
+    if (!isSupabaseConfigured) return [];
+
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+      
+    if (error) {
+      console.error('Error fetching comments:', error);
+      throw error;
     }
-    return localComments.filter(c => c.post_id === postId);
+    return data || [];
   },
 
-  async addComment(comment: Omit<Comment, 'id' | 'created_at'>): Promise<Comment> {
-    const newComment = {
-      ...comment,
-      id: crypto.randomUUID(),
-      created_at: new Date().toISOString(),
-    } as Comment;
+  async addComment(comment: Omit<Comment, 'id' | 'created_at'>) {
+    if (!isSupabaseConfigured) return;
 
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('comments').insert([newComment]).select().single();
-      if (error) {
-        console.error('Error adding comment:', error);
-      } else {
-        return data;
-      }
+    const { error } = await supabase
+      .from('comments')
+      .insert([{
+        ...comment,
+        created_at: new Date().toISOString()
+      }]);
+      
+    if (error) {
+      console.error('Error adding comment:', error);
+      throw error;
     }
-
-    localComments = [...localComments, newComment];
-    return newComment;
   },
 
   async getBookmarks(): Promise<Bookmark[]> {
-    if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('bookmarks').select('*');
-      if (error) {
-        console.error('Error fetching bookmarks:', error);
-        return localBookmarks;
-      }
-      return data;
+    if (!isSupabaseConfigured) return [];
+
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .select('*');
+      
+    if (error) {
+      console.error('Error fetching bookmarks:', error);
+      throw error;
     }
-    return localBookmarks;
+    return data || [];
   },
 
-  async toggleBookmark(postId: string, author: Member): Promise<boolean> {
-    const existingIndex = localBookmarks.findIndex(b => b.post_id === postId && b.author === author);
-    
-    if (isSupabaseConfigured && supabase) {
-      if (existingIndex >= 0) {
-        await supabase.from('bookmarks').delete().eq('post_id', postId).eq('author', author);
-      } else {
-        await supabase.from('bookmarks').insert([{ post_id: postId, author }]);
-      }
-      // Note: In a real app, you'd fetch the fresh state or handle errors better.
-    }
+  async toggleBookmark(postId: string, author: string): Promise<boolean> {
+    if (!isSupabaseConfigured) return false;
 
-    if (existingIndex >= 0) {
-      localBookmarks = localBookmarks.filter((_, idx) => idx !== existingIndex);
-      return false; // unbookmarked
+    // Check if exists
+    const { data } = await supabase
+      .from('bookmarks')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('author', author)
+      .single();
+
+    if (data) {
+      // Remove
+      await supabase.from('bookmarks').delete().eq('id', data.id);
+      return false;
     } else {
-      localBookmarks = [...localBookmarks, { id: crypto.randomUUID(), post_id: postId, author, created_at: new Date().toISOString() }];
-      return true; // bookmarked
+      // Add
+      await supabase.from('bookmarks').insert([{
+        post_id: postId,
+        author,
+        created_at: new Date().toISOString()
+      }]);
+      return true;
     }
   }
 };

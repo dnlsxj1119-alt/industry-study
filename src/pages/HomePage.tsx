@@ -1,5 +1,5 @@
 import React from 'react';
-import { Post } from '../types';
+import { Post, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { InsightTags } from '../components/Widgets/InsightTags';
 import { WeeklyStatus } from '../components/Widgets/WeeklyStatus';
@@ -7,13 +7,15 @@ import { Home } from 'lucide-react';
 
 interface HomePageProps {
   posts: Post[];
+  currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
-export function HomePage({ posts, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick }: HomePageProps) {
+export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: HomePageProps) {
   const recentPosts = posts.slice(0, 4);
 
   return (
@@ -35,10 +37,12 @@ export function HomePage({ posts, commentCounts, bookmarkedPostIds, onToggleBook
             <PostCard 
               key={post.id} 
               post={post} 
+              currentMember={currentMember}
               commentCount={commentCounts[post.id] || 0}
               isBookmarked={bookmarkedPostIds.has(post.id)}
               onBookmark={(e) => onToggleBookmark(e, post.id)}
               onClick={() => onPostClick(post)}
+              onEdit={onEdit}
             />
           ))}
           {recentPosts.length === 0 && (

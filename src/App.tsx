@@ -23,6 +23,7 @@ function App() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('전체');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
@@ -96,10 +97,15 @@ function App() {
   const renderCurrentPage = () => {
     const commonProps = {
       posts,
+      currentMember,
       commentCounts,
       bookmarkedPostIds,
       onToggleBookmark: handleToggleBookmark,
       onPostClick: setSelectedPost,
+      onEdit: (post: Post) => {
+        setEditingPost(post);
+        setIsFormOpen(true);
+      }
     };
 
     switch (currentTab) {
@@ -139,7 +145,7 @@ function App() {
       {/* Header Actions (Only show for Board for now, or across all if needed. User asked to keep "+ 기사 공유하기" fixed on mobile. Let's keep it visible on all tabs as a general action) */}
       <div className="flex justify-end mb-6 sticky top-0 z-10 pointer-events-none">
         <button 
-          onClick={() => setIsFormOpen(true)}
+          onClick={() => { setEditingPost(undefined); setIsFormOpen(true); }}
           className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto ml-auto"
         >
           <Plus className="w-5 h-5 md:mr-2" />
@@ -158,15 +164,24 @@ function App() {
             setSelectedPost(null);
             loadData(); // refresh comment counts
           }} 
+          onEdit={(post) => {
+            setEditingPost(post);
+            setIsFormOpen(true);
+          }}
         />
       )}
 
       {isFormOpen && (
         <PostFormModal 
           currentMember={currentMember} 
-          onClose={() => setIsFormOpen(false)} 
+          editPost={editingPost}
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingPost(undefined);
+          }} 
           onSuccess={() => {
             setIsFormOpen(false);
+            setEditingPost(undefined);
             loadData();
           }} 
         />

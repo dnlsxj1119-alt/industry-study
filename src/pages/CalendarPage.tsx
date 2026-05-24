@@ -7,13 +7,15 @@ import { cn, getMemberBgClass } from '../lib/utils';
 
 interface CalendarPageProps {
   posts: Post[];
+  currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
+  onEdit: (post: Post) => void;
 }
 
-export function CalendarPage({ posts, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick }: CalendarPageProps) {
+export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: CalendarPageProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedAuthor, setSelectedAuthor] = useState<Member | '전체'>('전체');
@@ -114,10 +116,12 @@ export function CalendarPage({ posts, commentCounts, bookmarkedPostIds, onToggle
             <PostCard 
               key={post.id} 
               post={post} 
+              currentMember={currentMember}
               commentCount={commentCounts[post.id] || 0}
               isBookmarked={bookmarkedPostIds.has(post.id)}
               onBookmark={(e) => onToggleBookmark(e, post.id)}
               onClick={() => onPostClick(post)}
+              onEdit={onEdit}
             />
           ))}
           {filteredPosts.length === 0 && (

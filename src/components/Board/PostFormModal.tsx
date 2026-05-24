@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
-import { Category, Member } from '../../types';
+import { Post, Category, Member } from '../../types';
 import { X } from 'lucide-react';
 import { api } from '../../lib/supabase';
 
 interface PostFormModalProps {
   currentMember: Member;
+  editPost?: Post;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function PostFormModal({ currentMember, onClose, onSuccess }: PostFormModalProps) {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [source, setSource] = useState('');
-  const [summary, setSummary] = useState('');
-  const [opinion, setOpinion] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState<Exclude<Category, '전체'>>('반도체');
-  const [tagsInput, setTagsInput] = useState('');
+export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: PostFormModalProps) {
+  const [title, setTitle] = useState(editPost?.title || '');
+  const [url, setUrl] = useState(editPost?.url || '');
+  const [source, setSource] = useState(editPost?.source || '');
+  const [summary, setSummary] = useState(editPost?.summary || '');
+  const [opinion, setOpinion] = useState(editPost?.opinion || '');
+  const [content, setContent] = useState(editPost?.content || '');
+  const [category, setCategory] = useState<Exclude<Category, '전체'>>(editPost?.category || '반도체');
+  const [tagsInput, setTagsInput] = useState(editPost?.tags.join(', ') || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories: Exclude<Category, '전체'>[] = ['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
@@ -30,17 +31,30 @@ export function PostFormModal({ currentMember, onClose, onSuccess }: PostFormMod
     
     const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
 
-    await api.addPost({
-      title,
-      url: url || undefined,
-      source,
-      summary,
-      opinion,
-      content: content || undefined,
-      category,
-      tags,
-      author: currentMember,
-    });
+    if (editPost) {
+      await api.updatePost(editPost.id, {
+        title,
+        url: url || undefined,
+        source,
+        summary,
+        opinion,
+        content: content || undefined,
+        category,
+        tags,
+      });
+    } else {
+      await api.addPost({
+        title,
+        url: url || undefined,
+        source,
+        summary,
+        opinion,
+        content: content || undefined,
+        category,
+        tags,
+        author: currentMember,
+      });
+    }
 
     setIsSubmitting(false);
     onSuccess();
@@ -49,9 +63,9 @@ export function PostFormModal({ currentMember, onClose, onSuccess }: PostFormMod
   return (
     <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl relative">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">새 기사 공유하기</h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+          <h2 className="text-xl font-bold text-gray-900">{editPost ? '기사 수정하기' : '새 기사 공유하기'}</h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -104,11 +118,11 @@ export function PostFormModal({ currentMember, onClose, onSuccess }: PostFormMod
           </div>
 
           <div className="pt-4 flex justify-end space-x-3">
-            <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors">
+            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors">
               취소
             </button>
-            <button type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center">
-              {isSubmitting ? '업로드 중...' : `${currentMember}(으)로 공유하기`}
+            <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 rounded-xl font-medium bg-gray-900 text-white hover:bg-gray-800 transition-colors disabled:opacity-50">
+              {isSubmitting ? (editPost ? '수정 중...' : '저장 중...') : (editPost ? '수정 완료' : '공유하기')}
             </button>
           </div>
         </form>
