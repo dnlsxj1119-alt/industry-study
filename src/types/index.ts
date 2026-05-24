@@ -24,6 +24,7 @@ export interface Comment {
   type: CommentType;
   content: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Bookmark {

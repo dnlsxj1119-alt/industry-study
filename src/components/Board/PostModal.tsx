@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Post, Comment, CommentType, Member } from '../../types';
-import { X, MessageCircle, ExternalLink, Bookmark, Pencil } from 'lucide-react';
+import { X, MessageCircle, ExternalLink, Bookmark, Pencil, Trash2 } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,6 +18,10 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<CommentType>('동의');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentText, setEditCommentText] = useState('');
 
   useEffect(() => {
     loadComments();
@@ -28,20 +32,63 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
     setComments(data);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
-    await api.addComment({
-      post_id: post.id,
-      author: currentMember,
-      type: commentType,
-      content: newComment.trim(),
-    });
-    setNewComment('');
-    await loadComments();
-    setIsSubmitting(false);
+    setError(null);
+    try {
+      await api.addComment({
+        post_id: post.id,
+        author: currentMember,
+        type: commentType,
+        content: newComment.trim()
+      });
+      setNewComment('');
+      loadComments();
+    } catch (err: any) {
+      setError(err.message || '댓글 작성 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!window.confirm('정말 이 게시글을 삭제하시겠습니까? 연결된 댓글과 북마크도 모두 삭제됩니다.')) return;
+    
+    setError(null);
+    try {
+      await api.deletePost(post.id);
+      onClose(); // App.tsx will refresh the posts since we call loadData on onClose
+    } catch (err: any) {
+      setError(err.message || '게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('이 댓글을 삭제하시겠습니까?')) return;
+    
+    setError(null);
+    try {
+      await api.deleteComment(commentId);
+      loadComments();
+    } catch (err: any) {
+      setError(err.message || '댓글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleUpdateComment = async (commentId: string) => {
+    if (!editCommentText.trim()) return;
+    
+    setError(null);
+    try {
+      await api.updateComment(commentId, editCommentText.trim());
+      setEditingCommentId(null);
+      loadComments();
+    } catch (err: any) {
+      setError(err.message || '댓글 수정 중 오류가 발생했습니다.');
+    }
   };
 
   const typeColors: Record<CommentType, string> = {
@@ -61,10 +108,16 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
+      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl relative">
         
-        {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-gray-100">
+        {error && (
+          <div className="absolute top-0 left-0 right-0 bg-red-100 text-red-700 px-4 py-2 text-sm text-center font-medium rounded-t-2xl">
+            {error}
+          </div>
+        )}
+
+        {/* Header (Sticky) */}
+        <div className={cn("flex-none border-b border-gray-100 p-6 bg-white rounded-t-2xl relative", error && "mt-8")}>
           <div className="pr-8">
             <div className="flex items-center space-x-2 mb-2">
               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-semibold">
@@ -87,11 +140,16 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
             </div>
           </div>
           
-          <div className="absolute top-4 right-4 flex items-center space-x-2">
+          <div className="absolute top-4 right-4 flex items-center space-x-1">
             {post.author === currentMember && (
-              <button onClick={() => { onClose(); onEdit(post); }} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="수정">
-                <Pencil className="w-5 h-5" />
-              </button>
+              <>
+                <button onClick={() => { onClose(); onEdit(post); }} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="수정">
+                  <Pencil className="w-5 h-5" />
+                </button>
+                <button onClick={handleDeletePost} className="p-2 text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50 rounded-full transition-colors" title="삭제">
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </>
             )}
             <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="닫기">
               <X className="w-5 h-5" />
@@ -152,19 +210,72 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
             <div className="space-y-4 mb-6">
               {comments.map(comment => (
                 <div key={comment.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center">
-                      <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs mr-2 border", getMemberColorClasses(comment.author))}>
+                  <div className="flex justify-between items-start mb-1.5">
+                    <div className="flex items-center space-x-2">
+                      <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border", getMemberColorClasses(comment.author))}>
                         {comment.author[0]}
                       </div>
-                      <span className={cn("font-bold text-sm mr-2", getMemberTextClass(comment.author))}>{comment.author}</span>
-                      <span className="text-xs text-gray-400 font-medium">{formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ko })}</span>
+                      <span className={cn("font-semibold text-sm", getMemberTextClass(comment.author))}>{comment.author}</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                        {comment.updated_at && comment.updated_at !== comment.created_at && " (수정됨)"}
+                      </span>
                     </div>
-                    <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold border", typeColors[comment.type])}>
-                      {comment.type}
-                    </span>
+                    
+                    {comment.author === currentMember && (
+                      <div className="flex items-center space-x-1">
+                        <button 
+                          onClick={() => {
+                            setEditingCommentId(comment.id);
+                            setEditCommentText(comment.content);
+                          }} 
+                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors" 
+                          title="댓글 수정"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteComment(comment.id)} 
+                          className="p-1 text-gray-400 hover:text-red-500 transition-colors" 
+                          title="댓글 삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
+                  
+                  {editingCommentId === comment.id ? (
+                    <div className="mt-2">
+                      <textarea
+                        value={editCommentText}
+                        onChange={(e) => setEditCommentText(e.target.value)}
+                        className="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 resize-none p-2"
+                        rows={2}
+                      />
+                      <div className="flex justify-end space-x-2 mt-2">
+                        <button 
+                          onClick={() => setEditingCommentId(null)}
+                          className="text-xs px-3 py-1.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md font-medium"
+                        >
+                          취소
+                        </button>
+                        <button 
+                          onClick={() => handleUpdateComment(comment.id)}
+                          className="text-xs px-3 py-1.5 text-white bg-gray-900 hover:bg-gray-800 rounded-md font-medium"
+                        >
+                          저장
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <span className={cn("self-start px-2 py-0.5 rounded text-[10px] font-bold border mb-1", typeColors[comment.type])}>
+                        {comment.type}
+                      </span>
+                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{comment.content}</p>
+                    </div>
+                  )}
                 </div>
               ))}
               {comments.length === 0 && (
@@ -178,7 +289,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
 
         {/* Comment Form */}
         <div className="p-4 border-t border-gray-200 bg-white">
-          <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
+          <form onSubmit={handleSubmitComment} className="p-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
             <div className="flex space-x-2">
               {(['동의', '반론', '추가자료', '질문'] as CommentType[]).map(type => (
                 <button

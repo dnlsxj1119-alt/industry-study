@@ -103,7 +103,7 @@ export const api = {
     return data || [];
   },
 
-  async addComment(comment: Omit<Comment, 'id' | 'created_at'>) {
+  async addComment(comment: Omit<Comment, 'id' | 'created_at' | 'updated_at'>) {
     if (!isSupabaseConfigured) return;
 
     const { error } = await supabase
@@ -115,6 +115,37 @@ export const api = {
       
     if (error) {
       console.error('Error adding comment:', error);
+      throw error;
+    }
+  },
+
+  async updateComment(id: string, content: string) {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('comments')
+      .update({
+        content,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error updating comment:', error);
+      throw error;
+    }
+  },
+
+  async deleteComment(id: string) {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting comment:', error);
       throw error;
     }
   },
