@@ -13,6 +13,7 @@ export interface Post {
   category: Exclude<Category, '전체'>;
   tags: string[];
   author: Member;
+  study_date: string;
   created_at: string;
   updated_at: string;
 }

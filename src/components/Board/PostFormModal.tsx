@@ -19,6 +19,7 @@ export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: P
   const [content, setContent] = useState(editPost?.content || '');
   const [category, setCategory] = useState<Exclude<Category, '전체'>>(editPost?.category || '반도체');
   const [tagsInput, setTagsInput] = useState(editPost?.tags.join(', ') || '');
+  const [studyDate, setStudyDate] = useState(editPost?.study_date || new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories: Exclude<Category, '전체'>[] = ['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
@@ -41,6 +42,7 @@ export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: P
         content: content || undefined,
         category,
         tags,
+        study_date: studyDate,
       });
     } else {
       await api.addPost({
@@ -52,6 +54,7 @@ export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: P
         content: content || undefined,
         category,
         tags,
+        study_date: studyDate,
         author: currentMember,
       });
     }
@@ -76,14 +79,28 @@ export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: P
               <label className="text-sm font-semibold text-gray-700">기사 제목 *</label>
               <input required value={title} onChange={e => setTitle(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: TSMC CoWoS 증설 속도 둔화" />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">카테고리 *</label>
-              <select value={category} onChange={e => setCategory(e.target.value as any)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors appearance-none">
-                {categories.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">스터디 카테고리 *</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as Exclude<Category, '전체'>)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all appearance-none bg-white"
+              >
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">스터디 날짜 *</label>
+              <input
+                type="date"
+                required
+                value={studyDate}
+                onChange={(e) => setStudyDate(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white"
+              />
+            </div>
+          </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

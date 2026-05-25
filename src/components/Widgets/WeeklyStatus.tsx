@@ -1,5 +1,6 @@
 import { Post, Member } from '../../types';
 import { cn, getMemberColorClasses, getMemberBgClass, getMemberTextClass } from '../../lib/utils';
+import { isSameWeek } from 'date-fns';
 
 interface WeeklyStatusProps {
   posts: Post[];
@@ -9,9 +10,17 @@ export function WeeklyStatus({ posts }: WeeklyStatusProps) {
   const members: Member[] = ['다연', '유연', '준순'];
   const targetPerMember = 5;
   
+  // Filter posts for this week using study_date
+  const now = new Date();
+  const thisWeekPosts = posts.filter(p => {
+    // Fallback to created_at if study_date doesn't exist yet (for safety)
+    const dateToUse = p.study_date ? new Date(p.study_date) : new Date(p.created_at);
+    return isSameWeek(dateToUse, now, { weekStartsOn: 1 }); // Assuming week starts on Monday
+  });
+
   // Calculate uploads per member
   const uploadsByMember = members.reduce((acc, member) => {
-    acc[member] = posts.filter(p => p.author === member).length;
+    acc[member] = thisWeekPosts.filter(p => p.author === member).length;
     return acc;
   }, {} as Record<Member, number>);
 

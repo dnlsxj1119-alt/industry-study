@@ -33,14 +33,15 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
 
   // Filter posts for the selected date and author
   const filteredPosts = posts.filter(post => {
-    const isSame = isSameDay(new Date(post.created_at), selectedDate);
+    const postDate = new Date(post.study_date);
+    const isSame = isSameDay(postDate, selectedDate);
     const authorMatch = selectedAuthor === '전체' || post.author === selectedAuthor;
     return isSame && authorMatch;
   });
 
   const getAuthorsForDate = (date: Date): Member[] => {
     const authors = posts
-      .filter(post => isSameDay(new Date(post.created_at), date))
+      .filter(post => isSameDay(new Date(post.study_date), date))
       .map(post => post.author);
     return Array.from(new Set(authors));
   };

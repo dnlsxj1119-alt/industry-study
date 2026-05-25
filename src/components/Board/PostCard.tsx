@@ -26,10 +26,11 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, onBo
     '경제/시장': 'bg-gray-100 text-gray-800 border-gray-200',
   };
 
+  const studyDateStr = post.study_date ? new Date(post.study_date).toLocaleDateString('ko-KR', {
+    month: 'long', day: 'numeric'
+  }) : '날짜 미지정';
+
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko });
-  const createdDate = new Date(post.created_at).toLocaleDateString('ko-KR', {
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  }).replace(/. /g, '.').replace(/\.$/, '');
 
   return (
     <div 
@@ -80,7 +81,9 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, onBo
           </div>
           <span className="text-xs text-gray-700 font-bold">{post.author}</span>
           <span className="text-gray-300 text-xs">•</span>
-          <span className="text-xs text-gray-400 font-medium">{createdDate}</span>
+          <span className="text-xs text-gray-500 font-bold">{studyDateStr} 스터디</span>
+          <span className="text-gray-300 text-xs">•</span>
+          <span className="text-xs text-gray-400 font-medium" title={`작성일: ${new Date(post.created_at).toLocaleString()}`}>{timeAgo}</span>
         </div>
         
         <div className="flex items-center space-x-3">

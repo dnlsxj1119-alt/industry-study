@@ -104,6 +104,9 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
   const createdTime = new Date(post.created_at).toLocaleTimeString('ko-KR', {
     hour: '2-digit', minute: '2-digit'
   });
+  const studyDateStr = post.study_date ? new Date(post.study_date).toLocaleDateString('ko-KR', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  }) : '날짜 미지정';
   const isEdited = post.updated_at && post.updated_at !== post.created_at;
 
   return (
@@ -126,9 +129,10 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
               <span className="text-gray-400 text-sm">출처: {post.source}</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-2">{post.title}</h2>
-            <div className="flex items-center space-x-3 text-sm text-gray-500 font-medium">
-              <span>{createdDate} {createdTime}</span>
-              {isEdited && <span className="text-gray-400 text-xs bg-gray-100 px-1.5 py-0.5 rounded">수정됨</span>}
+            <div className="flex items-center space-x-3 text-sm font-medium">
+              <span className="text-gray-800 bg-gray-100 px-2 py-0.5 rounded">{studyDateStr} 스터디</span>
+              <span className="text-gray-400 text-xs" title="업로드 일시">{createdDate} {createdTime}</span>
+              {isEdited && <span className="text-gray-400 text-xs bg-gray-50 px-1.5 py-0.5 rounded border">수정됨</span>}
               {post.url && (
                 <>
                   <span className="text-gray-300">•</span>
