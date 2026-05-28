@@ -193,7 +193,14 @@ function App() {
           editPost={editingPost}
           categories={categories}
           onAddCategory={async (newCat) => {
-            await api.addCategory(newCat);
+            try {
+              await api.addCategory(newCat);
+            } catch (err: any) {
+              // Ignore unique constraint violation (code '23505')
+              if (err?.code !== '23505') {
+                throw err;
+              }
+            }
             const updated = await api.getCategories();
             if (updated.length > 0) setCategories(updated);
           }}

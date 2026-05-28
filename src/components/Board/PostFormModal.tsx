@@ -109,11 +109,21 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
                   <button
                     type="button"
                     onClick={async () => {
-                      if (!newCategory.trim()) return;
-                      await onAddCategory(newCategory.trim());
-                      setCategory(newCategory.trim());
-                      setNewCategory('');
-                      setIsAddingCategory(false);
+                      const catName = newCategory.trim();
+                      if (!catName) return;
+                      
+                      try {
+                        // Prevent duplicate API calls if already in list
+                        if (!categories.includes(catName)) {
+                          await onAddCategory(catName);
+                        }
+                        setCategory(catName);
+                        setNewCategory('');
+                        setIsAddingCategory(false);
+                      } catch (err) {
+                        alert('카테고리 추가에 실패했습니다. (DB 테이블/RLS 설정을 확인해주세요)');
+                        console.error('Failed to add category:', err);
+                      }
                     }}
                     className="px-4 py-2.5 shrink-0 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
