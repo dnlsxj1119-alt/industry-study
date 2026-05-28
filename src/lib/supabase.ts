@@ -188,5 +188,34 @@ export const api = {
       }]);
       return true;
     }
+  },
+
+  async getCategories(): Promise<string[]> {
+    if (!isSupabaseConfigured) return [];
+    
+    const { data, error } = await supabase
+      .from('categories')
+      .select('name')
+      .order('created_at', { ascending: true });
+      
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+    
+    return data.map(row => row.name) || [];
+  },
+
+  async addCategory(name: string): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('categories')
+      .insert([{ name }]);
+      
+    if (error) {
+      console.error('Error adding category:', error);
+      throw error;
+    }
   }
 };

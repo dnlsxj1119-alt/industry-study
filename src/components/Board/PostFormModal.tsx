@@ -6,23 +6,28 @@ import { api } from '../../lib/supabase';
 interface PostFormModalProps {
   currentMember: Member;
   editPost?: Post;
+  categories: string[];
+  onAddCategory: (name: string) => Promise<void>;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: PostFormModalProps) {
+export function PostFormModal({ currentMember, editPost, categories, onAddCategory, onClose, onSuccess }: PostFormModalProps) {
   const [title, setTitle] = useState(editPost?.title || '');
   const [url, setUrl] = useState(editPost?.url || '');
   const [source, setSource] = useState(editPost?.source || '');
   const [summary, setSummary] = useState(editPost?.summary || '');
   const [opinion, setOpinion] = useState(editPost?.opinion || '');
   const [content, setContent] = useState(editPost?.content || '');
-  const [category, setCategory] = useState<Exclude<Category, '전체'>>(editPost?.category || '반도체');
+  const [category, setCategory] = useState<string>(editPost?.category || '반도체');
   const [tagsInput, setTagsInput] = useState(editPost?.tags.join(', ') || '');
   const [studyDate, setStudyDate] = useState(editPost?.study_date || new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
 
-  const categories: Exclude<Category, '전체'>[] = ['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
+  // Filter out "전체" for the form dropdown
+  const selectableCategories = categories.filter(c => c !== '전체');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,14 +86,49 @@ export function PostFormModal({ currentMember, editPost, onClose, onSuccess }: P
             </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">스터디 카테고리 *</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as Exclude<Category, '전체'>)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all appearance-none bg-white"
-              >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-semibold text-gray-700">스터디 카테고리 *</label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingCategory(!isAddingCategory)}
+                  className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                >
+                  {isAddingCategory ? '취소' : '+ 카테고리 추가'}
+                </button>
+              </div>
+              
+              {isAddingCategory ? (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={newCategory}
+                    onChange={e => setNewCategory(e.target.value)}
+                    placeholder="새 카테고리명"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!newCategory.trim()) return;
+                      await onAddCategory(newCategory.trim());
+                      setCategory(newCategory.trim());
+                      setNewCategory('');
+                      setIsAddingCategory(false);
+                    }}
+                    className="px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    추가
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all appearance-none bg-white"
+                >
+                  {selectableCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">스터디 날짜 *</label>

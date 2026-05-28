@@ -5,6 +5,7 @@ import { cn, getMemberColorClasses, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { TextWithLinks } from '../TextWithLinks';
 
 interface PostModalProps {
   post: Post;
@@ -169,9 +170,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 mr-2"></span>
                 기사 내용
               </h4>
-              <div className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </div>
+              <TextWithLinks text={post.content} className="text-gray-700 text-sm md:text-base leading-relaxed" />
             </div>
           )}
 
@@ -190,9 +189,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                 <p className="text-xs text-gray-500">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko })}</p>
               </div>
             </div>
-            <p className="text-gray-800 font-medium leading-relaxed">
-              "{post.opinion}"
-            </p>
+            <TextWithLinks text={`"${post.opinion}"`} className="text-gray-800 font-medium leading-relaxed" />
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {post.tags.map(tag => (
@@ -277,7 +274,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                       <span className={cn("self-start px-2 py-0.5 rounded text-[10px] font-bold border mb-1", typeColors[comment.type])}>
                         {comment.type}
                       </span>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">{comment.content}</p>
+                      <TextWithLinks text={comment.content} className="text-gray-700 text-sm" />
                     </div>
                   )}
                 </div>

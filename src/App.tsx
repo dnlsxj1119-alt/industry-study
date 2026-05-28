@@ -27,6 +27,8 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
+  const [categories, setCategories] = useState<string[]>(['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장']);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check localStorage for saved member on initial load
   useEffect(() => {
@@ -42,22 +44,35 @@ function App() {
   };
 
   const loadData = async () => {
-    const fetchedPosts = await api.getPosts();
-    setPosts(fetchedPosts);
-    
-    // Load comment counts (simplified for demo)
-    const counts: Record<string, number> = {};
-    for (const post of fetchedPosts) {
-      const comments = await api.getComments(post.id);
-      counts[post.id] = comments.length;
-    }
-    setCommentCounts(counts);
+    setIsLoading(true);
+    try {
+      const fetchedPosts = await api.getPosts();
+      setPosts(fetchedPosts);
+      
+      // Load comment counts (simplified for demo)
+      const counts: Record<string, number> = {};
+      for (const post of fetchedPosts) {
+        const comments = await api.getComments(post.id);
+        counts[post.id] = comments.length;
+      }
+      setCommentCounts(counts);
 
-    // Load bookmarks for current user
-    if (currentMember) {
-      const allBookmarks = await api.getBookmarks();
-      const userBookmarks = allBookmarks.filter(b => b.author === currentMember);
-      setBookmarkedPostIds(new Set(userBookmarks.map(b => b.post_id)));
+      // Load bookmarks for current user
+      if (currentMember) {
+        const allBookmarks = await api.getBookmarks();
+        const userBookmarks = allBookmarks.filter(b => b.author === currentMember);
+        setBookmarkedPostIds(new Set(userBookmarks.map(b => b.post_id)));
+      }
+
+      // Also fetch categories
+      const fetchedCategories = await api.getCategories();
+      if (fetchedCategories.length > 0) {
+        setCategories(fetchedCategories);
+      }
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,6 +132,7 @@ function App() {
             {...commonProps}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
+            categories={categories}
           />
         );
       case '달력':
@@ -175,6 +191,12 @@ function App() {
         <PostFormModal 
           currentMember={currentMember} 
           editPost={editingPost}
+          categories={categories}
+          onAddCategory={async (newCat) => {
+            await api.addCategory(newCat);
+            const updated = await api.getCategories();
+            if (updated.length > 0) setCategories(updated);
+          }}
           onClose={() => {
             setIsFormOpen(false);
             setEditingPost(undefined);

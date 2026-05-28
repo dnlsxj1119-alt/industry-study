@@ -13,6 +13,7 @@ interface BoardPageProps {
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
   onEdit: (post: Post) => void;
+  categories: string[];
 }
 
 export function BoardPage({
@@ -24,9 +25,10 @@ export function BoardPage({
   bookmarkedPostIds,
   onToggleBookmark,
   onPostClick,
-  onEdit
+  onEdit,
+  categories
 }: BoardPageProps) {
-  const categories: Category[] = ['전체', '반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장'];
+  const allCategories: Category[] = ['전체', ...categories];
   
   const filteredPosts = activeCategory === '전체' 
     ? posts 
@@ -36,7 +38,7 @@ export function BoardPage({
     <div className="flex-1 min-w-0">
       <div className="mb-6">
         <CategoryTabs 
-          categories={categories} 
+          categories={allCategories} 
           activeCategory={activeCategory} 
           onSelect={setActiveCategory} 
         />
