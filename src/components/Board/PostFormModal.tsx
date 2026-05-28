@@ -79,19 +79,19 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-gray-700">기사 제목 *</label>
+            <input required value={title} onChange={e => setTitle(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: TSMC CoWoS 증설 속도 둔화" />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">기사 제목 *</label>
-              <input required value={title} onChange={e => setTitle(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: TSMC CoWoS 증설 속도 둔화" />
-            </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-semibold text-gray-700">스터디 카테고리 *</label>
                 <button
                   type="button"
                   onClick={() => setIsAddingCategory(!isAddingCategory)}
-                  className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                  className="text-xs text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap ml-2"
                 >
                   {isAddingCategory ? '취소' : '+ 카테고리 추가'}
                 </button>
@@ -104,7 +104,7 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
                     value={newCategory}
                     onChange={e => setNewCategory(e.target.value)}
                     placeholder="새 카테고리명"
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white text-sm"
+                    className="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white text-sm"
                   />
                   <button
                     type="button"
@@ -115,7 +115,7 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
                       setNewCategory('');
                       setIsAddingCategory(false);
                     }}
-                    className="px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                    className="px-4 py-2.5 shrink-0 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
                   >
                     추가
                   </button>
@@ -140,7 +140,6 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white"
               />
             </div>
-          </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
