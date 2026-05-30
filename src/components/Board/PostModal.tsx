@@ -251,6 +251,14 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                       <textarea
                         value={editCommentText}
                         onChange={(e) => setEditCommentText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (editCommentText.trim()) {
+                              handleUpdateComment(comment.id);
+                            }
+                          }
+                        }}
                         className="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 resize-none p-2"
                         rows={2}
                       />
@@ -309,12 +317,21 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
               ))}
             </div>
             <div className="flex space-x-2">
-              <input
-                type="text"
+              <textarea
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
-                placeholder={`${currentMember}(으)로 의견 남기기...`}
-                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (newComment.trim()) {
+                      // Submit by creating a synthetic event since we are not using the form submit directly here
+                      handleSubmitComment(e as unknown as React.FormEvent);
+                    }
+                  }
+                }}
+                placeholder={`${currentMember}(으)로 의견 남기기... (Enter로 등록, Shift+Enter로 줄바꿈)`}
+                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors text-sm resize-none"
+                rows={2}
               />
               <button
                 type="submit"
