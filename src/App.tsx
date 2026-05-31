@@ -13,6 +13,7 @@ import { HomePage } from './pages/HomePage';
 import { BoardPage } from './pages/BoardPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { BookmarkPage } from './pages/BookmarkPage';
+import { PresentationPage } from './pages/PresentationPage';
 import { DiscussionPage } from './pages/DiscussionPage';
 import { MemberPage } from './pages/MemberPage';
 
@@ -55,10 +56,8 @@ function App() {
       const members: Record<string, string[]> = {};
       for (const post of fetchedPosts) {
         const comments = await api.getComments(post.id);
-        // Exclude '발표' from normal comment count
-        const normalComments = comments.filter(c => c.type !== '발표');
-        counts[post.id] = normalComments.length;
-        members[post.id] = Array.from(new Set(normalComments.map(c => c.author)));
+        counts[post.id] = comments.length;
+        members[post.id] = Array.from(new Set(comments.map(c => c.author)));
       }
       setCommentCounts(counts);
       setCommentedMembers(members);
@@ -146,6 +145,8 @@ function App() {
         return <CalendarPage {...commonProps} />;
       case '북마크':
         return <BookmarkPage {...commonProps} />;
+      case '발표자료':
+        return <PresentationPage currentMember={currentMember} />;
       case '멤버':
         return <MemberPage {...commonProps} />;
       default:

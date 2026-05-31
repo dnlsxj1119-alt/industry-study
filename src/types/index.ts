@@ -1,6 +1,6 @@
 export type Member = '다연' | '유연' | '준순';
 export type Category = string;
-export type CommentType = '동의' | '반론' | '추가자료' | '질문' | '발표';
+export type CommentType = '동의' | '반론' | '추가자료' | '질문';
 
 export interface Post {
   id: string;
@@ -33,4 +33,15 @@ export interface Bookmark {
   post_id: string;
   author: Member;
   created_at: string;
+}
+
+export interface Presentation {
+  id: string;
+  title: string;
+  author: Member;
+  content: string;
+  study_date?: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
 }

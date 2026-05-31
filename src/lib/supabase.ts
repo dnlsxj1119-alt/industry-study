@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Post, Comment, Bookmark } from '../types';
+import type { Post, Comment, Bookmark, Presentation } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -215,6 +215,63 @@ export const api = {
       
     if (error) {
       console.error('Error adding category:', error);
+      throw error;
+    }
+  },
+
+  // --- Presentations ---
+  async getPresentations(): Promise<Presentation[]> {
+    if (!isSupabaseConfigured) return [];
+    
+    const { data, error } = await supabase
+      .from('presentations')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching presentations:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async addPresentation(presentation: Omit<Presentation, 'id' | 'created_at' | 'updated_at'>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('presentations')
+      .insert([presentation]);
+      
+    if (error) {
+      console.error('Error adding presentation:', error);
+      throw error;
+    }
+  },
+
+  async updatePresentation(id: string, updates: Partial<Omit<Presentation, 'id' | 'created_at' | 'author'>>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('presentations')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error updating presentation:', error);
+      throw error;
+    }
+  },
+
+  async deletePresentation(id: string): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('presentations')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting presentation:', error);
       throw error;
     }
   }

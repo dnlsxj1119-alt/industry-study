@@ -1,9 +1,9 @@
 import React from 'react';
-import { Home, LayoutDashboard, MessageSquare, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Home, LayoutDashboard, MessageSquare, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon, Mic } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { Member } from '../types';
 
-export type TabId = '홈' | '보드' | '달력' | '북마크' | '멤버';
+export type TabId = '홈' | '보드' | '달력' | '북마크' | '멤버' | '발표자료';
 
 interface SidebarProps {
   currentMember: Member;
@@ -18,6 +18,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
     { icon: LayoutDashboard, label: '보드' },
     { icon: CalendarIcon, label: '달력' },
     { icon: BookmarkIcon, label: '북마크' },
+    { icon: Mic, label: '발표자료' },
     { icon: Users, label: '멤버' },
   ];
 
