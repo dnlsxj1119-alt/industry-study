@@ -39,6 +39,9 @@ export function BoardPage({
 
   if (showUncommentedOnly) {
     filteredPosts = filteredPosts.filter(p => {
+      // 본인이 작성한 기사는 필터(미작성 목록)에서 제외
+      if (p.author === currentMember) return false;
+      
       const hasCommented = commentedMembers[p.id]?.includes(currentMember);
       return !hasCommented;
     });

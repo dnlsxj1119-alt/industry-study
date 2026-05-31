@@ -69,11 +69,11 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, hasC
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
               ✅ 내 댓글 완료
             </span>
-          ) : (
+          ) : post.author !== currentMember ? (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-600 border border-red-100">
               ⚠️ 댓글 미작성
             </span>
-          )
+          ) : null
         )}
       </div>
 
