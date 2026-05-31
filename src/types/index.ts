@@ -1,6 +1,6 @@
 export type Member = '다연' | '유연' | '준순';
 export type Category = string;
-export type CommentType = '동의' | '반론' | '추가자료' | '질문';
+export type CommentType = '동의' | '반론' | '추가자료' | '질문' | '발표';
 
 export interface Post {
   id: string;

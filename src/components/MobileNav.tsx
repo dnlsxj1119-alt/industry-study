@@ -14,7 +14,6 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
     { icon: LayoutDashboard, label: '보드' },
     { icon: CalendarIcon, label: '달력' },
     { icon: BookmarkIcon, label: '북마크' },
-    { icon: MessageSquare, label: '토론' },
     { icon: Users, label: '멤버' },
   ];
 

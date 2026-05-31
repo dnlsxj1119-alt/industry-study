@@ -11,12 +11,13 @@ interface PostCardProps {
   currentMember: Member;
   commentCount: number;
   isBookmarked: boolean;
+  hasCommented?: boolean;
   onBookmark: (e: React.MouseEvent) => void;
   onClick: () => void;
   onEdit: (post: Post) => void;
 }
 
-export function PostCard({ post, currentMember, commentCount, isBookmarked, onBookmark, onClick, onEdit }: PostCardProps) {
+export function PostCard({ post, currentMember, commentCount, isBookmarked, hasCommented, onBookmark, onClick, onEdit }: PostCardProps) {
   const categoryColors: Record<string, string> = {
     '반도체': 'bg-blue-100 text-blue-800 border-blue-200',
     'AI': 'bg-purple-100 text-purple-800 border-purple-200',
@@ -60,6 +61,20 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, onBo
             <Bookmark className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} />
           </button>
         </div>
+      </div>
+
+      <div className="mb-2">
+        {hasCommented !== undefined && (
+          hasCommented ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+              ✅ 내 댓글 완료
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-600 border border-red-100">
+              ⚠️ 댓글 미작성
+            </span>
+          )
+        )}
       </div>
 
       <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{post.title}</h3>

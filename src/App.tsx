@@ -26,6 +26,7 @@ function App() {
   const [editingPost, setEditingPost] = useState<Post | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+  const [commentedMembers, setCommentedMembers] = useState<Record<string, string[]>>({});
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<string[]>(['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장']);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,13 +50,18 @@ function App() {
       const fetchedPosts = await api.getPosts();
       setPosts(fetchedPosts);
       
-      // Load comment counts (simplified for demo)
+      // Load comment counts and commented members
       const counts: Record<string, number> = {};
+      const members: Record<string, string[]> = {};
       for (const post of fetchedPosts) {
         const comments = await api.getComments(post.id);
-        counts[post.id] = comments.length;
+        // Exclude '발표' from normal comment count
+        const normalComments = comments.filter(c => c.type !== '발표');
+        counts[post.id] = normalComments.length;
+        members[post.id] = Array.from(new Set(normalComments.map(c => c.author)));
       }
       setCommentCounts(counts);
+      setCommentedMembers(members);
 
       // Load bookmarks for current user
       if (currentMember) {
@@ -114,6 +120,7 @@ function App() {
       posts,
       currentMember,
       commentCounts,
+      commentedMembers,
       bookmarkedPostIds,
       onToggleBookmark: handleToggleBookmark,
       onPostClick: setSelectedPost,
@@ -139,8 +146,6 @@ function App() {
         return <CalendarPage {...commonProps} />;
       case '북마크':
         return <BookmarkPage {...commonProps} />;
-      case '토론':
-        return <DiscussionPage {...commonProps} />;
       case '멤버':
         return <MemberPage {...commonProps} />;
       default:

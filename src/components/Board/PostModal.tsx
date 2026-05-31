@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Post, Comment, CommentType, Member } from '../../types';
-import { X, MessageCircle, ExternalLink, Bookmark, Pencil, Trash2 } from 'lucide-react';
+import { X, MessageCircle, ExternalLink, Bookmark, Pencil, Trash2, Mic } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
@@ -97,7 +97,90 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
     '반론': 'bg-red-50 text-red-700 border-red-200',
     '추가자료': 'bg-green-50 text-green-700 border-green-200',
     '질문': 'bg-purple-50 text-purple-700 border-purple-200',
+    '발표': 'bg-amber-50 text-amber-700 border-amber-200',
   };
+
+  const presentationPlans = comments.filter(c => c.type === '발표');
+  const discussionComments = comments.filter(c => c.type !== '발표');
+
+  const renderComment = (comment: Comment) => (
+    <div key={comment.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+      <div className="flex justify-between items-start mb-1.5">
+        <div className="flex items-center space-x-2">
+          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border", getMemberColorClasses(comment.author))}>
+            {comment.author[0]}
+          </div>
+          <span className={cn("font-semibold text-sm", getMemberTextClass(comment.author))}>{comment.author}</span>
+          <span className="text-xs text-gray-500">
+            {new Date(comment.created_at).toLocaleDateString()}
+            {comment.updated_at && comment.updated_at !== comment.created_at && " (수정됨)"}
+          </span>
+        </div>
+        
+        {comment.author === currentMember && (
+          <div className="flex items-center space-x-1">
+            <button 
+              onClick={() => {
+                setEditingCommentId(comment.id);
+                setEditCommentText(comment.content);
+              }} 
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors" 
+              title="댓글 수정"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => handleDeleteComment(comment.id)} 
+              className="p-1 text-gray-400 hover:text-red-500 transition-colors" 
+              title="댓글 삭제"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+      
+      {editingCommentId === comment.id ? (
+        <div className="mt-2">
+          <textarea
+            value={editCommentText}
+            onChange={(e) => setEditCommentText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (editCommentText.trim()) {
+                  handleUpdateComment(comment.id);
+                }
+              }
+            }}
+            className="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 resize-none p-2"
+            rows={2}
+          />
+          <div className="flex justify-end space-x-2 mt-2">
+            <button 
+              onClick={() => setEditingCommentId(null)}
+              className="text-xs px-3 py-1.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md font-medium"
+            >
+              취소
+            </button>
+            <button 
+              onClick={() => handleUpdateComment(comment.id)}
+              className="text-xs px-3 py-1.5 text-white bg-gray-900 hover:bg-gray-800 rounded-md font-medium"
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          <span className={cn("self-start px-2 py-0.5 rounded text-[10px] font-bold border mb-1", typeColors[comment.type])}>
+            {comment.type}
+          </span>
+          <TextWithLinks text={comment.content} className="text-gray-700 text-sm" />
+        </div>
+      )}
+    </div>
+  );
 
   const createdDate = new Date(post.created_at).toLocaleDateString('ko-KR', {
     year: 'numeric', month: '2-digit', day: '2-digit'
@@ -201,93 +284,33 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
             )}
           </div>
 
+          {/* Presentation Plans Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+              <Mic className="w-5 h-5 mr-2 text-amber-500" />
+              발표 예정 내용
+            </h3>
+            
+            <div className="space-y-4 mb-4">
+              {presentationPlans.map(renderComment)}
+              {presentationPlans.length === 0 && (
+                <div className="text-center py-6 text-gray-500 text-sm bg-gray-50/50 rounded-xl border border-gray-100 border-dashed">
+                  아직 등록된 발표 예정 내용이 없습니다.
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Comments Section */}
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
               <MessageCircle className="w-5 h-5 mr-2 text-gray-500" />
-              의견 및 토론 <span className="ml-2 text-sm bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">{comments.length}</span>
+              의견 및 토론 <span className="ml-2 text-sm bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">{discussionComments.length}</span>
             </h3>
             
             <div className="space-y-4 mb-6">
-              {comments.map(comment => (
-                <div key={comment.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                  <div className="flex justify-between items-start mb-1.5">
-                    <div className="flex items-center space-x-2">
-                      <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border", getMemberColorClasses(comment.author))}>
-                        {comment.author[0]}
-                      </div>
-                      <span className={cn("font-semibold text-sm", getMemberTextClass(comment.author))}>{comment.author}</span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(comment.created_at).toLocaleDateString()}
-                        {comment.updated_at && comment.updated_at !== comment.created_at && " (수정됨)"}
-                      </span>
-                    </div>
-                    
-                    {comment.author === currentMember && (
-                      <div className="flex items-center space-x-1">
-                        <button 
-                          onClick={() => {
-                            setEditingCommentId(comment.id);
-                            setEditCommentText(comment.content);
-                          }} 
-                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors" 
-                          title="댓글 수정"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteComment(comment.id)} 
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors" 
-                          title="댓글 삭제"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {editingCommentId === comment.id ? (
-                    <div className="mt-2">
-                      <textarea
-                        value={editCommentText}
-                        onChange={(e) => setEditCommentText(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (editCommentText.trim()) {
-                              handleUpdateComment(comment.id);
-                            }
-                          }
-                        }}
-                        className="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 resize-none p-2"
-                        rows={2}
-                      />
-                      <div className="flex justify-end space-x-2 mt-2">
-                        <button 
-                          onClick={() => setEditingCommentId(null)}
-                          className="text-xs px-3 py-1.5 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md font-medium"
-                        >
-                          취소
-                        </button>
-                        <button 
-                          onClick={() => handleUpdateComment(comment.id)}
-                          className="text-xs px-3 py-1.5 text-white bg-gray-900 hover:bg-gray-800 rounded-md font-medium"
-                        >
-                          저장
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col">
-                      <span className={cn("self-start px-2 py-0.5 rounded text-[10px] font-bold border mb-1", typeColors[comment.type])}>
-                        {comment.type}
-                      </span>
-                      <TextWithLinks text={comment.content} className="text-gray-700 text-sm" />
-                    </div>
-                  )}
-                </div>
-              ))}
-              {comments.length === 0 && (
+              {discussionComments.map(renderComment)}
+              {discussionComments.length === 0 && (
                 <div className="text-center py-8 text-gray-500 text-sm bg-white rounded-xl border border-gray-100 border-dashed">
                   첫 번째 의견을 남겨보세요!
                 </div>
@@ -300,7 +323,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
         <div className="p-4 border-t border-gray-200 bg-white">
           <form onSubmit={handleSubmitComment} className="p-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
             <div className="flex space-x-2">
-              {(['동의', '반론', '추가자료', '질문'] as CommentType[]).map(type => (
+              {(['동의', '반론', '추가자료', '질문', '발표'] as CommentType[]).map(type => (
                 <button
                   key={type}
                   type="button"

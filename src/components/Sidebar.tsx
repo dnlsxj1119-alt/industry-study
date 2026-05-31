@@ -3,7 +3,7 @@ import { Home, LayoutDashboard, MessageSquare, Bookmark as BookmarkIcon, Users, 
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { Member } from '../types';
 
-export type TabId = '홈' | '보드' | '달력' | '토론' | '북마크' | '멤버';
+export type TabId = '홈' | '보드' | '달력' | '북마크' | '멤버';
 
 interface SidebarProps {
   currentMember: Member;
@@ -18,7 +18,6 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
     { icon: LayoutDashboard, label: '보드' },
     { icon: CalendarIcon, label: '달력' },
     { icon: BookmarkIcon, label: '북마크' },
-    { icon: MessageSquare, label: '토론' },
     { icon: Users, label: '멤버' },
   ];
 
