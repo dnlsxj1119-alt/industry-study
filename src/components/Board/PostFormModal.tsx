@@ -69,16 +69,16 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-2xl relative">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+    <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90dvh] flex flex-col shadow-2xl relative overflow-hidden">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50 shrink-0">
           <h2 className="text-xl font-bold text-gray-900">{editPost ? '기사 수정하기' : '새 기사 공유하기'}</h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+          <button type="button" onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">기사 제목 *</label>
             <input required value={title} onChange={e => setTitle(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: TSMC CoWoS 증설 속도 둔화" />
