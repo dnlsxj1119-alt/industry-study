@@ -49,7 +49,7 @@ export function BoardPage({
 
   return (
     <div className="flex-1 min-w-0">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <CategoryTabs 
           categories={allCategories} 
           activeCategory={activeCategory} 
