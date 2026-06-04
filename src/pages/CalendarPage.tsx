@@ -62,9 +62,6 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
             const dayPosts = getDayPosts(day);
             const isSelected = isSameDay(day, selectedDate);
             
-            const displayDots = dayPosts.slice(0, 4);
-            const extraCount = dayPosts.length > 4 ? dayPosts.length - 4 : 0;
-            
             return (
               <div 
                 key={idx} 
@@ -77,16 +74,13 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
                 )}
               >
                 <span className="text-sm">{format(day, dateFormat)}</span>
-                <div className="flex space-x-0.5 mt-1 h-1.5 min-h-[6px] items-center justify-center">
-                  {displayDots.map(post => (
+                <div className="flex flex-wrap gap-[3px] mt-1.5 min-h-[6px] items-center justify-center max-w-[80%]">
+                  {dayPosts.map(post => (
                     <span 
                       key={post.id} 
                       className={cn("w-1.5 h-1.5 rounded-full shrink-0", getMemberBgClass(post.author))}
                     ></span>
                   ))}
-                  {extraCount > 0 && (
-                    <span className="text-[8px] font-bold text-gray-500 leading-none ml-0.5">+{extraCount}</span>
-                  )}
                 </div>
               </div>
             );
