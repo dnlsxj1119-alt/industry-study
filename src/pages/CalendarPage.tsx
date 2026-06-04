@@ -39,11 +39,8 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
     return isSame && authorMatch;
   });
 
-  const getAuthorsForDate = (date: Date): Member[] => {
-    const authors = posts
-      .filter(post => isSameDay(new Date(post.study_date), date))
-      .map(post => post.author);
-    return Array.from(new Set(authors));
+  const getDayPosts = (date: Date) => {
+    return posts.filter(post => isSameDay(new Date(post.study_date), date));
   };
 
   return (
@@ -62,12 +59,17 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
             <div key={day} className="text-sm font-semibold text-gray-500 py-2">{day}</div>
           ))}
           {days.map((day, idx) => {
-            const authors = getAuthorsForDate(day);
+            const dayPosts = getDayPosts(day);
             const isSelected = isSameDay(day, selectedDate);
+            
+            const displayDots = dayPosts.slice(0, 4);
+            const extraCount = dayPosts.length > 4 ? dayPosts.length - 4 : 0;
+            
             return (
               <div 
                 key={idx} 
                 onClick={() => setSelectedDate(day)}
+                title={dayPosts.map(p => `${p.author}: ${p.title}`).join('\n')}
                 className={cn(
                   "p-1 md:p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border",
                   !isSameMonth(day, monthStart) ? "text-gray-300 bg-transparent border-transparent" : "text-gray-700 bg-gray-50 hover:bg-gray-100 border-transparent",
@@ -75,13 +77,16 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
                 )}
               >
                 <span className="text-sm">{format(day, dateFormat)}</span>
-                <div className="flex space-x-1 mt-1 h-1.5 min-h-[6px]">
-                  {authors.map(author => (
+                <div className="flex space-x-0.5 mt-1 h-1.5 min-h-[6px] items-center justify-center">
+                  {displayDots.map(post => (
                     <span 
-                      key={author} 
-                      className={cn("w-1.5 h-1.5 rounded-full", getMemberBgClass(author))}
+                      key={post.id} 
+                      className={cn("w-1.5 h-1.5 rounded-full shrink-0", getMemberBgClass(post.author))}
                     ></span>
                   ))}
+                  {extraCount > 0 && (
+                    <span className="text-[8px] font-bold text-gray-500 leading-none ml-0.5">+{extraCount}</span>
+                  )}
                 </div>
               </div>
             );
