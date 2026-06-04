@@ -24,6 +24,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     loadPresentations();
@@ -116,6 +117,24 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
       alert('저장 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setFilesToUpload(prev => [...prev, ...Array.from(e.dataTransfer.files)]);
     }
   };
 
@@ -310,9 +329,17 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
               
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">첨부파일</label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-gray-50 transition-colors">
+                <div 
+                  className={cn(
+                    "mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-xl transition-colors",
+                    isDragging ? "border-primary-500 bg-primary-50" : "border-gray-300 hover:bg-gray-50"
+                  )}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
                   <div className="space-y-1 text-center">
-                    <Paperclip className="mx-auto h-12 w-12 text-gray-400" />
+                    <Paperclip className={cn("mx-auto h-12 w-12", isDragging ? "text-primary-500" : "text-gray-400")} />
                     <div className="flex text-sm text-gray-600 justify-center">
                       <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
                         <span>파일 선택</span>
