@@ -60,13 +60,14 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
           ))}
           {days.map((day, idx) => {
             const dayPosts = getDayPosts(day);
+            const sortedDayPosts = [...dayPosts].sort((a, b) => a.author.localeCompare(b.author));
             const isSelected = isSameDay(day, selectedDate);
             
             return (
               <div 
                 key={idx} 
                 onClick={() => setSelectedDate(day)}
-                title={dayPosts.map(p => `${p.author}: ${p.title}`).join('\n')}
+                title={sortedDayPosts.map(p => `${p.author}: ${p.title}`).join('\n')}
                 className={cn(
                   "p-1 md:p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border",
                   !isSameMonth(day, monthStart) ? "text-gray-300 bg-transparent border-transparent" : "text-gray-700 bg-gray-50 hover:bg-gray-100 border-transparent",
@@ -75,7 +76,7 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
               >
                 <span className="text-sm">{format(day, dateFormat)}</span>
                 <div className="flex flex-wrap gap-[3px] mt-1.5 min-h-[6px] items-center justify-center max-w-[80%]">
-                  {dayPosts.map(post => (
+                  {sortedDayPosts.map(post => (
                     <span 
                       key={post.id} 
                       className={cn("w-1.5 h-1.5 rounded-full shrink-0", getMemberBgClass(post.author))}
