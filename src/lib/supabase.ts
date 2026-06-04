@@ -274,5 +274,30 @@ export const api = {
       console.error('Error deleting presentation:', error);
       throw error;
     }
+  },
+
+  async uploadPresentationFile(file: File): Promise<string> {
+    if (!isSupabaseConfigured) throw new Error('Supabase not configured');
+    
+    const fileExt = file.name.split('.').pop();
+    // Keep the original name somewhat for better URLs but ensure uniqueness
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-]/g, '_');
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}_${safeName}`;
+    const filePath = `attachments/${fileName}`;
+
+    const { error } = await supabase.storage
+      .from('presentations')
+      .upload(filePath, file);
+
+    if (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+
+    const { data } = supabase.storage
+      .from('presentations')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
   }
 };

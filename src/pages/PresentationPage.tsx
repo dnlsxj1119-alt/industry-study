@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Presentation, Member } from '../types';
-import { Mic, Search, Plus, X, Pencil, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { Presentation, Member, Attachment } from '../types';
+import { Mic, Search, Plus, X, Pencil, Trash2, Calendar as CalendarIcon, Paperclip, Download, Image as ImageIcon, FileText } from 'lucide-react';
 import { api } from '../lib/supabase';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -21,6 +21,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
   const [content, setContent] = useState('');
   const [studyDate, setStudyDate] = useState('');
   const [tagsInput, setTagsInput] = useState('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -38,6 +40,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
     setContent('');
     setStudyDate('');
     setTagsInput('');
+    setAttachments([]);
+    setFilesToUpload([]);
     setIsModalOpen(true);
   };
 
@@ -47,6 +51,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
     setContent(p.content);
     setStudyDate(p.study_date || '');
     setTagsInput(p.tags.join(', '));
+    setAttachments(p.attachments || []);
+    setFilesToUpload([]);
     setIsModalOpen(true);
   };
 
@@ -69,12 +75,29 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
     const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
 
     try {
+      let finalAttachments = [...attachments];
+      if (filesToUpload.length > 0) {
+        const uploaded = await Promise.all(
+          filesToUpload.map(async file => {
+            const url = await api.uploadPresentationFile(file);
+            return {
+              name: file.name,
+              url,
+              size: file.size,
+              type: file.type
+            };
+          })
+        );
+        finalAttachments = [...finalAttachments, ...uploaded];
+      }
+
       if (editingId) {
         await api.updatePresentation(editingId, {
           title: title.trim(),
           content: content.trim(),
           study_date: studyDate || undefined,
-          tags
+          tags,
+          attachments: finalAttachments
         });
       } else {
         await api.addPresentation({
@@ -82,7 +105,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
           title: title.trim(),
           content: content.trim(),
           study_date: studyDate || undefined,
-          tags
+          tags,
+          attachments: finalAttachments
         });
       }
       setIsModalOpen(false);
@@ -165,6 +189,36 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
             <div className="text-gray-700 text-sm whitespace-pre-wrap flex-1 mb-4">
               {p.content}
             </div>
+
+            {p.attachments && p.attachments.length > 0 && (
+              <div className="mt-2 mb-4 space-y-2">
+                <div className="grid grid-cols-1 gap-2">
+                  {p.attachments.map((att, idx) => {
+                    const isImage = att.type.startsWith('image/');
+                    return (
+                      <a
+                        key={idx}
+                        href={att.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group bg-white"
+                      >
+                        {isImage ? (
+                          <ImageIcon className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
+                        ) : (
+                          <FileText className="w-5 h-5 text-gray-500 mr-2 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate group-hover:text-primary-600">{att.name}</p>
+                          <p className="text-[10px] text-gray-500">{(att.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                        <Download className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             
             <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
               <div className="flex flex-wrap gap-1">
@@ -174,12 +228,20 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                   </span>
                 ))}
               </div>
-              {p.study_date && (
-                <div className="flex items-center text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                  <CalendarIcon className="w-3 h-3 mr-1" />
-                  {new Date(p.study_date).toLocaleDateString()}
-                </div>
-              )}
+              <div className="flex items-center space-x-2">
+                {p.attachments && p.attachments.length > 0 && (
+                  <div className="flex items-center text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                    <Paperclip className="w-3 h-3 mr-1" />
+                    {p.attachments.length}
+                  </div>
+                )}
+                {p.study_date && (
+                  <div className="flex items-center text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100">
+                    <CalendarIcon className="w-3 h-3 mr-1" />
+                    {new Date(p.study_date).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -244,6 +306,67 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
                   placeholder="쉼표(,)로 구분하여 입력 (예: AI, 반도체, ESS)"
                 />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">첨부파일</label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="space-y-1 text-center">
+                    <Paperclip className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="flex text-sm text-gray-600 justify-center">
+                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                        <span>파일 선택</span>
+                        <input type="file" multiple className="sr-only" onChange={e => {
+                          if (e.target.files) {
+                            setFilesToUpload(prev => [...prev, ...Array.from(e.target.files!)]);
+                          }
+                        }} />
+                      </label>
+                      <p className="pl-1">또는 드래그 앤 드롭</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PDF, PPT, PNG, JPG, DOC 등</p>
+                  </div>
+                </div>
+                
+                {(attachments.length > 0 || filesToUpload.length > 0) && (
+                  <ul className="mt-4 border border-gray-200 rounded-xl divide-y divide-gray-200 bg-gray-50">
+                    {attachments.map((att, idx) => (
+                      <li key={`att-${idx}`} className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
+                        <div className="w-0 flex-1 flex items-center">
+                          <Paperclip className="flex-shrink-0 h-5 w-5 text-gray-400" />
+                          <span className="ml-2 flex-1 w-0 truncate">{att.name}</span>
+                        </div>
+                        <div className="ml-4 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                            className="font-medium text-red-600 hover:text-red-500"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                    {filesToUpload.map((file, idx) => (
+                      <li key={`file-${idx}`} className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
+                        <div className="w-0 flex-1 flex items-center">
+                          <FileText className="flex-shrink-0 h-5 w-5 text-gray-400" />
+                          <span className="ml-2 flex-1 w-0 truncate">{file.name}</span>
+                          <span className="ml-2 text-gray-500 text-xs px-2 py-0.5 bg-gray-200 rounded-full">업로드 예정</span>
+                        </div>
+                        <div className="ml-4 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setFilesToUpload(prev => prev.filter((_, i) => i !== idx))}
+                            className="font-medium text-red-600 hover:text-red-500"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">

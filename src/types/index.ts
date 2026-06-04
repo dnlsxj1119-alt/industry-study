@@ -35,6 +35,13 @@ export interface Bookmark {
   created_at: string;
 }
 
+export interface Attachment {
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+}
+
 export interface Presentation {
   id: string;
   title: string;
@@ -42,6 +49,7 @@ export interface Presentation {
   content: string;
   study_date?: string;
   tags: string[];
+  attachments?: Attachment[];
   created_at: string;
   updated_at: string;
 }
