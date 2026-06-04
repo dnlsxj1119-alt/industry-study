@@ -218,24 +218,24 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                 >
                   <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight pr-12 group-hover:text-primary-700 transition-colors">{p.title}</h3>
                   
-                  <div className="flex flex-wrap gap-1 mb-4">
+                  <div className="text-gray-600 text-[13px] line-clamp-2 mb-4 leading-relaxed break-keep whitespace-pre-wrap">
+                    {p.content}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1.5 mt-auto mb-3">
                     {p.tags?.slice(0, 5).map(tag => (
-                      <span key={tag} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px] font-medium border border-gray-100">
+                      <span key={tag} className="text-gray-400 text-[11px] tracking-tight">
                         #{tag}
                       </span>
                     ))}
                     {p.tags && p.tags.length > 5 && (
-                      <span className="px-2 py-0.5 bg-gray-50 text-gray-400 rounded text-[10px] font-medium border border-gray-100">
+                      <span className="text-gray-300 text-[11px] tracking-tight">
                         +{p.tags.length - 5}
                       </span>
                     )}
                   </div>
                   
-                  <div className="text-gray-500 text-sm line-clamp-2 flex-1 mb-5">
-                    {p.content}
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="flex items-center space-x-2">
                       <div className={cn("w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] border", getMemberColorClasses(p.author))}>
                         {p.author[0]}
