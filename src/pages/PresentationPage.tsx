@@ -151,7 +151,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
     const date = new Date(dateStr || createdStr);
     const monthStart = startOfMonth(date);
     const weekNumber = differenceInCalendarWeeks(date, monthStart, { weekStartsOn: 1 }) + 1;
-    return `${formatDate(date, 'yyyy년 M월')} ${weekNumber}주차`;
+    return `${formatDate(date, 'yyyy년 M월')} ${weekNumber}주차|${formatDate(date, 'yyyy.MM.dd')}`;
   };
 
   const groupedPresentations = filtered.reduce((acc, p) => {
@@ -202,15 +202,20 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
       </div>
 
       <div className="space-y-10">
-        {sortedWeeks.map(week => (
-          <div key={week} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="flex items-center space-x-2 mb-4 pl-1">
+        {sortedWeeks.map(weekKey => {
+          const [weekStr, dateStr] = weekKey.split('|');
+          return (
+          <div key={weekKey} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex items-baseline space-x-2 mb-4 pl-1">
               <span className="text-xl">📅</span>
-              <h3 className="text-lg font-bold text-gray-900">{week}</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                {weekStr}
+                {dateStr && <span className="ml-2 text-sm font-medium text-gray-400">({dateStr})</span>}
+              </h3>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {groupedPresentations[week].map(p => (
+              {groupedPresentations[weekKey].map(p => (
                 <div 
                   key={p.id} 
                   onClick={() => setViewingPost(p)}
@@ -275,7 +280,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
               ))}
             </div>
           </div>
-        ))}
+          );
+        })}
         {filtered.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
             <p className="text-gray-500">등록된 발표자료가 없습니다.</p>
