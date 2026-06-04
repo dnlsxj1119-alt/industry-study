@@ -3,7 +3,7 @@ import { Presentation, Member, Attachment } from '../types';
 import { Mic, Search, Plus, X, Pencil, Trash2, Calendar as CalendarIcon, Paperclip, Download, Image as ImageIcon, FileText } from 'lucide-react';
 import { api } from '../lib/supabase';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, startOfMonth, differenceInCalendarWeeks, format as formatDate } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 interface PresentationPageProps {
@@ -25,6 +25,9 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Viewing state
+  const [viewingPost, setViewingPost] = useState<Presentation | null>(null);
 
   useEffect(() => {
     loadPresentations();
@@ -144,6 +147,26 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
     p.author.includes(searchQuery)
   );
 
+  const getWeekString = (dateStr: string | undefined, createdStr: string) => {
+    const date = new Date(dateStr || createdStr);
+    const monthStart = startOfMonth(date);
+    const weekNumber = differenceInCalendarWeeks(date, monthStart, { weekStartsOn: 1 }) + 1;
+    return `${formatDate(date, 'yyyy년 M월')} ${weekNumber}주차`;
+  };
+
+  const groupedPresentations = filtered.reduce((acc, p) => {
+    const weekStr = getWeekString(p.study_date, p.created_at);
+    if (!acc[weekStr]) acc[weekStr] = [];
+    acc[weekStr].push(p);
+    return acc;
+  }, {} as Record<string, Presentation[]>);
+
+  const sortedWeeks = Object.keys(groupedPresentations).sort((a, b) => {
+    const dateA = new Date(groupedPresentations[a][0].study_date || groupedPresentations[a][0].created_at).getTime();
+    const dateB = new Date(groupedPresentations[b][0].study_date || groupedPresentations[b][0].created_at).getTime();
+    return dateB - dateA;
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-end mb-2">
@@ -178,89 +201,78 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {filtered.map(p => (
-          <div key={p.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-all flex flex-col group p-5">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center space-x-2">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs border", getMemberColorClasses(p.author))}>
-                  {p.author[0]}
-                </div>
-                <span className={cn("font-semibold text-sm", getMemberTextClass(p.author))}>{p.author}</span>
-                <span className="text-xs text-gray-400">
-                  {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: ko })}
-                </span>
-              </div>
-              {p.author === currentMember && (
-                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => openEditModal(p)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => handleDelete(p.id)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
+      <div className="space-y-10">
+        {sortedWeeks.map(week => (
+          <div key={week} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex items-center space-x-2 mb-4 pl-1">
+              <span className="text-xl">📅</span>
+              <h3 className="text-lg font-bold text-gray-900">{week}</h3>
             </div>
             
-            <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight">{p.title}</h3>
-            
-            <div className="text-gray-700 text-sm whitespace-pre-wrap flex-1 mb-4">
-              {p.content}
-            </div>
-
-            {p.attachments && p.attachments.length > 0 && (
-              <div className="mt-2 mb-4 space-y-2">
-                <div className="grid grid-cols-1 gap-2">
-                  {p.attachments.map((att, idx) => {
-                    const isImage = att.type.startsWith('image/');
-                    return (
-                      <a
-                        key={idx}
-                        href={att.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group bg-white"
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {groupedPresentations[week].map(p => (
+                <div 
+                  key={p.id} 
+                  onClick={() => setViewingPost(p)}
+                  className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all flex flex-col group p-5 cursor-pointer relative"
+                >
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight pr-12 group-hover:text-primary-700 transition-colors">{p.title}</h3>
+                  
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {p.tags?.slice(0, 5).map(tag => (
+                      <span key={tag} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px] font-medium border border-gray-100">
+                        #{tag}
+                      </span>
+                    ))}
+                    {p.tags && p.tags.length > 5 && (
+                      <span className="px-2 py-0.5 bg-gray-50 text-gray-400 rounded text-[10px] font-medium border border-gray-100">
+                        +{p.tags.length - 5}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="text-gray-500 text-sm line-clamp-2 flex-1 mb-5">
+                    {p.content}
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                    <div className="flex items-center space-x-2">
+                      <div className={cn("w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] border", getMemberColorClasses(p.author))}>
+                        {p.author[0]}
+                      </div>
+                      <span className={cn("font-medium text-xs", getMemberTextClass(p.author))}>{p.author}</span>
+                      <span className="text-[10px] text-gray-400">
+                        · {new Date(p.study_date || p.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {p.attachments && p.attachments.length > 0 && (
+                      <div className="flex items-center text-xs font-medium text-gray-500">
+                        <Paperclip className="w-3.5 h-3.5 mr-1" />
+                        {p.attachments.length}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {p.author === currentMember && (
+                    <div className="absolute top-4 right-4 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-gray-100">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); openEditModal(p); }} 
+                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100"
+                        title="수정"
                       >
-                        {isImage ? (
-                          <ImageIcon className="w-5 h-5 text-blue-500 mr-2 flex-shrink-0" />
-                        ) : (
-                          <FileText className="w-5 h-5 text-gray-500 mr-2 flex-shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate group-hover:text-primary-600">{att.name}</p>
-                          <p className="text-[10px] text-gray-500">{(att.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
-                        <Download className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0" />
-                      </a>
-                    );
-                  })}
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
+                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-              <div className="flex flex-wrap gap-1">
-                {p.tags?.map(tag => (
-                  <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-medium">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-              <div className="flex items-center space-x-2">
-                {p.attachments && p.attachments.length > 0 && (
-                  <div className="flex items-center text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100">
-                    <Paperclip className="w-3 h-3 mr-1" />
-                    {p.attachments.length}
-                  </div>
-                )}
-                {p.study_date && (
-                  <div className="flex items-center text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100">
-                    <CalendarIcon className="w-3 h-3 mr-1" />
-                    {new Date(p.study_date).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
           </div>
         ))}
@@ -413,6 +425,95 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {viewingPost && (
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-white z-10 shrink-0">
+              <div className="flex items-center space-x-2 text-gray-500 text-sm font-medium">
+                <Mic className="w-4 h-4" />
+                <span>발표자료 상세</span>
+              </div>
+              <button onClick={() => setViewingPost(null)} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 md:p-8 overflow-y-auto">
+              <div className="mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-5 leading-tight">{viewingPost.title}</h3>
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {viewingPost.tags?.map(tag => (
+                    <span key={tag} className="px-2.5 py-1 bg-gray-50 border border-gray-100 text-gray-600 rounded-md text-xs font-medium">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                  <div className="flex items-center space-x-2">
+                    <div className={cn("w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs border bg-white", getMemberColorClasses(viewingPost.author))}>
+                      {viewingPost.author[0]}
+                    </div>
+                    <span className={cn("font-medium", getMemberTextClass(viewingPost.author))}>{viewingPost.author}</span>
+                  </div>
+                  <div className="w-px h-4 bg-gray-300"></div>
+                  <div className="flex items-center font-medium">
+                    <CalendarIcon className="w-4 h-4 mr-1.5 text-gray-400" />
+                    {new Date(viewingPost.study_date || viewingPost.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="prose prose-gray max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed text-base">
+                {viewingPost.content}
+              </div>
+
+              {viewingPost.attachments && viewingPost.attachments.length > 0 && (
+                <div className="mt-10 border-t border-gray-100 pt-8">
+                  <h4 className="text-base font-bold text-gray-900 flex items-center mb-4">
+                    <Paperclip className="w-5 h-5 mr-2 text-gray-400" />
+                    첨부파일 <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs text-gray-600">{viewingPost.attachments.length}</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {viewingPost.attachments.map((att, idx) => {
+                      const isImage = att.type.startsWith('image/');
+                      return (
+                        <a
+                          key={idx}
+                          href={att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center p-3 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-colors group bg-white shadow-sm hover:shadow"
+                        >
+                          {isImage ? (
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
+                              <ImageIcon className="w-5 h-5 text-blue-500" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mr-3 flex-shrink-0">
+                              <FileText className="w-5 h-5 text-gray-500" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700">{att.name}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">{(att.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary-100 group-hover:border-primary-200 transition-colors ml-2 flex-shrink-0">
+                            <Download className="w-4 h-4 text-gray-400 group-hover:text-primary-600" />
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
