@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Post, Category, Member } from '../types';
 import { CategoryTabs } from '../components/Board/CategoryTabs';
 import { PostCard } from '../components/Board/PostCard';
+import { Search, X } from 'lucide-react';
 
 interface BoardPageProps {
   posts: Post[];
@@ -31,6 +32,7 @@ export function BoardPage({
   categories
 }: BoardPageProps) {
   const [showUncommentedOnly, setShowUncommentedOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const allCategories: Category[] = ['전체', ...categories];
   
   let filteredPosts = activeCategory === '전체' 
@@ -45,6 +47,13 @@ export function BoardPage({
       const hasCommented = commentedMembers[p.id]?.includes(currentMember);
       return !hasCommented;
     });
+  }
+
+  if (searchQuery.trim() !== '') {
+    const q = searchQuery.toLowerCase();
+    filteredPosts = filteredPosts.filter(p => 
+      p.title.toLowerCase().includes(q) || p.summary.toLowerCase().includes(q)
+    );
   }
 
   return (
@@ -70,6 +79,27 @@ export function BoardPage({
         </label>
       </div>
 
+      <div className="mb-6 relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          placeholder="기사 제목이나 한줄 요약으로 검색..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition-shadow hover:shadow-md"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {filteredPosts.map(post => (
           <PostCard 
@@ -86,7 +116,9 @@ export function BoardPage({
         ))}
         {filteredPosts.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
-            <p className="text-gray-500">이 카테고리에 아직 공유된 기사가 없습니다.</p>
+            <p className="text-gray-500">
+              {searchQuery ? "검색 결과가 없습니다" : "이 카테고리에 아직 공유된 기사가 없습니다."}
+            </p>
           </div>
         )}
       </div>
