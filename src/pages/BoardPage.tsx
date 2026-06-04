@@ -33,6 +33,8 @@ export function BoardPage({
 }: BoardPageProps) {
   const [showUncommentedOnly, setShowUncommentedOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchContent, setSearchContent] = useState(false);
+  const [searchOpinion, setSearchOpinion] = useState(false);
   const allCategories: Category[] = ['전체', ...categories];
   
   let filteredPosts = activeCategory === '전체' 
@@ -51,9 +53,12 @@ export function BoardPage({
 
   if (searchQuery.trim() !== '') {
     const q = searchQuery.toLowerCase();
-    filteredPosts = filteredPosts.filter(p => 
-      p.title.toLowerCase().includes(q) || p.summary.toLowerCase().includes(q)
-    );
+    filteredPosts = filteredPosts.filter(p => {
+      if (p.title.toLowerCase().includes(q) || p.summary.toLowerCase().includes(q)) return true;
+      if (searchContent && p.content?.toLowerCase().includes(q)) return true;
+      if (searchOpinion && p.opinion?.toLowerCase().includes(q)) return true;
+      return false;
+    });
   }
 
   return (
@@ -79,25 +84,52 @@ export function BoardPage({
         </label>
       </div>
 
-      <div className="mb-6 relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="기사 제목이나 한줄 요약으로 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition-shadow hover:shadow-md"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
-        <input
-          type="text"
-          placeholder="기사 제목이나 한줄 요약으로 검색..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm shadow-sm transition-shadow hover:shadow-md"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
+        
+        <div className="mt-3 flex items-center space-x-4 px-1">
+          <label className="flex items-center space-x-2 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              checked={searchContent}
+              onChange={(e) => setSearchContent(e.target.checked)}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+              기사 본문 포함
+            </span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              checked={searchOpinion}
+              onChange={(e) => setSearchOpinion(e.target.checked)}
+              className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+              내 의견 포함
+            </span>
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
