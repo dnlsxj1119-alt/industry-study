@@ -89,28 +89,32 @@ export function NotificationBell({ currentMember, onNotificationClick }: Notific
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-500 hover:text-gray-900 transition-colors pointer-events-auto rounded-full hover:bg-gray-100"
+        className={`relative p-2.5 text-gray-600 transition-all pointer-events-auto rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:shadow hover:text-gray-900 active:scale-95 ${isOpen ? 'ring-2 ring-primary-100 border-primary-300' : ''}`}
       >
-        <Bell className="w-6 h-6" />
+        <Bell className="w-[22px] h-[22px] sm:w-[26px] sm:h-[26px]" strokeWidth={2} />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+          <span className="absolute -top-1.5 -right-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white border-2 border-white shadow-sm">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 pointer-events-auto">
-          <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 className="font-bold text-gray-900 text-sm">알림</h3>
+        <div className="absolute right-0 mt-3 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 pointer-events-auto ring-1 ring-black ring-opacity-5">
+          <div className="px-4 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
+            <h3 className="font-bold text-gray-900 text-sm tracking-tight">알림</h3>
             {unreadCount > 0 && (
-              <span className="text-xs text-primary-600 font-medium">{unreadCount}개 안 읽음</span>
+              <span className="text-xs text-primary-600 font-semibold bg-primary-50 px-2 py-0.5 rounded-full">{unreadCount}개 안 읽음</span>
             )}
           </div>
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[420px] overflow-y-auto overscroll-contain">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                알림이 없습니다.
+              <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                  <Bell className="w-6 h-6 text-gray-300" />
+                </div>
+                <p className="text-gray-600 text-sm font-medium">새로운 알림이 없습니다</p>
+                <p className="text-gray-400 text-xs mt-1">게시글에 댓글이 달리면 이곳에 표시됩니다</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
@@ -118,18 +122,18 @@ export function NotificationBell({ currentMember, onNotificationClick }: Notific
                   <div 
                     key={n.id}
                     onClick={() => handleNotificationClick(n)}
-                    className={`px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50 flex items-start space-x-3 ${!n.is_read ? 'bg-blue-50/50' : 'opacity-70'}`}
+                    className={`px-4 py-3.5 cursor-pointer transition-colors hover:bg-gray-50 flex items-start space-x-3 group ${!n.is_read ? 'bg-primary-50/40' : 'opacity-75'}`}
                   >
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm text-gray-900 ${!n.is_read ? 'font-medium' : ''}`}>
+                      <p className={`text-[13.5px] leading-snug text-gray-900 ${!n.is_read ? 'font-semibold' : 'font-medium group-hover:text-gray-900'}`}>
                         {n.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1.5 font-medium">
                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
                       </p>
                     </div>
                     {!n.is_read && (
-                      <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 flex-shrink-0 shadow-sm ring-2 ring-primary-100"></div>
                     )}
                   </div>
                 ))}
