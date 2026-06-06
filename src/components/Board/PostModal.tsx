@@ -46,6 +46,27 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
         type: commentType,
         content: newComment.trim()
       });
+      
+      // Notification logic
+      const recipients = new Set<string>();
+      recipients.add(post.author);
+      comments.forEach(c => recipients.add(c.author));
+      recipients.delete(currentMember);
+      
+      const notifyPromises = Array.from(recipients).map(recipient => 
+        api.addNotification({
+          recipient_id: recipient,
+          actor_id: currentMember,
+          type: 'comment',
+          post_id: post.id,
+          comment_id: 'new',
+          message: post.author === recipient 
+            ? `${currentMember}님이 내 글에 댓글을 남겼습니다.`
+            : `${currentMember}님이 댓글을 남겼습니다.`
+        })
+      );
+      await Promise.all(notifyPromises);
+
       setNewComment('');
       loadComments();
     } catch (err: any) {

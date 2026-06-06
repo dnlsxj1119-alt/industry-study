@@ -7,6 +7,7 @@ import { Plus } from 'lucide-react';
 import { api, isSupabaseConfigured } from './lib/supabase';
 import { Post, Category, Member } from './types';
 import { TabId } from './components/Sidebar';
+import { NotificationBell } from './components/NotificationBell';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -154,6 +155,21 @@ function App() {
     }
   };
 
+  const handleNotificationClick = async (postId: string) => {
+    let post = posts.find(p => p.id === postId);
+    if (!post) {
+      const allPosts = await api.getPosts();
+      post = allPosts.find(p => p.id === postId);
+    }
+    if (post) {
+      setSelectedPost(post);
+    }
+  };
+
+  if (!currentMember) {
+    return <MemberSelect onSelect={handleMemberSelect} />;
+  }
+
   return (
     <Layout 
       currentMember={currentMember} 
@@ -165,17 +181,18 @@ function App() {
       onChangeTab={setCurrentTab}
     >
       {/* Header Actions */}
-      {currentTab !== '발표자료' && (
-        <div className="flex justify-end mb-6 sticky top-0 z-10 pointer-events-none">
+      <div className="flex justify-end items-center space-x-3 mb-6 sticky top-0 z-10 pointer-events-none">
+        <NotificationBell currentMember={currentMember} onNotificationClick={handleNotificationClick} />
+        {currentTab !== '발표자료' && (
           <button 
             onClick={() => { setEditingPost(undefined); setIsFormOpen(true); }}
-            className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto ml-auto"
+            className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto"
           >
             <Plus className="w-5 h-5 md:mr-2" />
             <span className="hidden md:inline">기사 공유하기</span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {renderCurrentPage()}
 

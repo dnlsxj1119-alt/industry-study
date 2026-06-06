@@ -53,3 +53,15 @@ export interface Presentation {
   created_at: string;
   updated_at: string;
 }
+
+export interface Notification {
+  id: string;
+  recipient_id: Member;
+  actor_id: Member;
+  type: 'comment';
+  post_id: string;
+  comment_id: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}

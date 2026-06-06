@@ -299,5 +299,48 @@ export const api = {
       .getPublicUrl(filePath);
 
     return data.publicUrl;
+  },
+
+  // --- Notifications ---
+  async getNotifications(member: string): Promise<any[]> {
+    if (!isSupabaseConfigured) return [];
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('recipient_id', member)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async addNotification(notification: any) {
+    if (!isSupabaseConfigured) return;
+    const { error } = await supabase
+      .from('notifications')
+      .insert([{
+        ...notification,
+        is_read: false,
+        created_at: new Date().toISOString()
+      }]);
+      
+    if (error) {
+      console.error('Error adding notification:', error);
+    }
+  },
+
+  async markNotificationAsRead(id: string) {
+    if (!isSupabaseConfigured) return;
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error marking notification as read:', error);
+    }
   }
 };
