@@ -342,5 +342,40 @@ export const api = {
     if (error) {
       console.error('Error marking notification as read:', error);
     }
+  },
+
+  // --- Weekly Goals ---
+  async getWeeklyGoal(weekStartDate: string): Promise<number> {
+    if (!isSupabaseConfigured) return 5; // Default fallback
+    
+    const { data, error } = await supabase
+      .from('weekly_goals')
+      .select('target_count')
+      .eq('week_start_date', weekStartDate)
+      .single();
+      
+    if (error) {
+      // If no row exists or error, default to 5
+      return 5;
+    }
+    
+    return data ? data.target_count : 5;
+  },
+
+  async setWeeklyGoal(weekStartDate: string, targetCount: number) {
+    if (!isSupabaseConfigured) return;
+    
+    const { error } = await supabase
+      .from('weekly_goals')
+      .upsert({
+        week_start_date: weekStartDate,
+        target_count: targetCount,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'week_start_date' });
+      
+    if (error) {
+      console.error('Error setting weekly goal:', error);
+      throw error;
+    }
   }
 };

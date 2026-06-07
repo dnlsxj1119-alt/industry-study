@@ -65,3 +65,10 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
 }
+
+export interface WeeklyGoal {
+  week_start_date: string;
+  target_count: number;
+  created_at?: string;
+  updated_at?: string;
+}

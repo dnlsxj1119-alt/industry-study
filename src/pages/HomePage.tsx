@@ -54,7 +54,7 @@ export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostId
       </div>
 
       <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
-        <WeeklyStatus posts={posts} />
+        <WeeklyStatus posts={posts} currentMember={currentMember} />
         <InsightTags posts={posts} />
       </div>
     </div>
