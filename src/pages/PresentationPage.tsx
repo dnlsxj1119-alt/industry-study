@@ -221,7 +221,12 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                   onClick={() => setViewingPost(p)}
                   className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all flex flex-col group p-5 cursor-pointer relative"
                 >
-                  <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight pr-12 group-hover:text-primary-700 transition-colors">{p.title}</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight pr-12 group-hover:text-primary-700 transition-colors">
+                    {p.title}
+                    {p.updated_at && p.updated_at !== p.created_at && (
+                      <span className="ml-2 text-[11px] font-normal text-gray-400 align-middle">(수정됨)</span>
+                    )}
+                  </h3>
                   
                   <div className="text-gray-600 text-[13px] line-clamp-2 mb-4 leading-relaxed break-keep whitespace-pre-wrap">
                     {p.content}
@@ -258,7 +263,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                     )}
                   </div>
                   
-                  {p.author === currentMember && (
+                  {(p.author === currentMember || currentMember === '다연') && (
                     <div className="absolute top-4 right-4 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-gray-100">
                       <button 
                         onClick={(e) => { e.stopPropagation(); openEditModal(p); }} 
@@ -444,14 +449,40 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                 <Mic className="w-4 h-4" />
                 <span>발표자료 상세</span>
               </div>
-              <button onClick={() => setViewingPost(null)} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center space-x-1">
+                {(viewingPost.author === currentMember || currentMember === '다연') && (
+                  <>
+                    <button 
+                      onClick={() => { setViewingPost(null); openEditModal(viewingPost); }} 
+                      className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors flex items-center"
+                      title="수정"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
+                    <button 
+                      onClick={() => { handleDelete(viewingPost.id); setViewingPost(null); }} 
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center"
+                      title="삭제"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                    <div className="w-px h-5 bg-gray-200 mx-1"></div>
+                  </>
+                )}
+                <button onClick={() => setViewingPost(null)} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             
             <div className="p-6 md:p-8 overflow-y-auto">
               <div className="mb-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-5 leading-tight">{viewingPost.title}</h3>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-5 leading-tight">
+                  {viewingPost.title}
+                  {viewingPost.updated_at && viewingPost.updated_at !== viewingPost.created_at && (
+                    <span className="ml-3 text-sm font-normal text-gray-400 align-middle tracking-normal">(수정됨)</span>
+                  )}
+                </h3>
                 
                 <div className="flex flex-wrap gap-2 mb-6">
                   {viewingPost.tags?.map(tag => (
@@ -471,8 +502,15 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                   <div className="w-px h-4 bg-gray-300"></div>
                   <div className="flex items-center font-medium">
                     <CalendarIcon className="w-4 h-4 mr-1.5 text-gray-400" />
-                    {new Date(viewingPost.study_date || viewingPost.created_at).toLocaleDateString()}
+                    진행일: {new Date(viewingPost.study_date || viewingPost.created_at).toLocaleDateString()}
                   </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-1 text-[13px] text-gray-400 font-medium">
+                  <div>최초 작성: {new Date(viewingPost.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                  {viewingPost.updated_at && viewingPost.updated_at !== viewingPost.created_at && (
+                    <div>수정됨: {new Date(viewingPost.updated_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                  )}
                 </div>
               </div>
               
