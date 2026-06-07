@@ -272,13 +272,15 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
-                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100"
-                        title="삭제"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {p.author === currentMember && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
+                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-gray-100"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -459,13 +461,15 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                     >
                       <Pencil className="w-5 h-5" />
                     </button>
-                    <button 
-                      onClick={() => { handleDelete(viewingPost.id); setViewingPost(null); }} 
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center"
-                      title="삭제"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    {viewingPost.author === currentMember && (
+                      <button 
+                        onClick={() => { handleDelete(viewingPost.id); setViewingPost(null); }} 
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    )}
                     <div className="w-px h-5 bg-gray-200 mx-1"></div>
                   </>
                 )}
