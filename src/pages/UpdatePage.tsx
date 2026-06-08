@@ -134,10 +134,10 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
             {updates.map((update, index) => (
               <div 
                 key={update.id} 
-                className="py-12 first:pt-4 last:pb-0 relative group"
+                className="py-8 first:pt-4 last:pb-0 relative group"
               >
                 {isAdmin && (
-                  <div className="absolute top-12 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-8 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => openEditForm(update)}
                       className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
@@ -153,22 +153,22 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
                   </div>
                 )}
                 
-                <div className="flex items-center space-x-3 mb-6">
-                  <span className="text-base font-semibold text-gray-500">
+                <div className="flex items-center space-x-3 mb-1.5">
+                  <span className="text-xs font-medium text-gray-400">
                     {new Date(update.created_at).toLocaleDateString()}
                   </span>
                   {index === 0 && isNew(update.created_at) && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold tracking-wide">
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold tracking-wide">
                       NEW
                     </span>
                   )}
                 </div>
                 
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight pr-16">
+                <h3 className="text-lg font-bold text-gray-900 mb-3 leading-tight pr-16">
                   {update.title}
                 </h3>
                 
-                <div className="prose prose-gray max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed text-base">
+                <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
                   {update.content}
                 </div>
               </div>
