@@ -92,8 +92,6 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
     }
   };
 
-  const isNew = (dateStr: string) => differenceInDays(new Date(), new Date(dateStr)) <= 7;
-
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <div className="flex items-center justify-between mb-8">
@@ -157,19 +155,16 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
                   <span className="text-xs font-medium text-gray-400">
                     {new Date(update.created_at).toLocaleDateString()}
                   </span>
-                  {index === 0 && isNew(update.created_at) && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold tracking-wide">
-                      NEW
-                    </span>
-                  )}
                 </div>
                 
-                <h3 className="text-lg font-bold text-gray-900 mb-3 leading-tight pr-16">
-                  {update.title}
-                </h3>
-                
-                <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {update.content}
+                <div className="max-w-2xl">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3 leading-tight pr-16">
+                    {update.title}
+                  </h3>
+                  
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {update.content}
+                  </div>
                 </div>
               </div>
             ))}
