@@ -174,10 +174,10 @@ export function RichTextEditor({ content, onChange, placeholder, minHeight = '20
       </div>
 
       {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto bg-white min-h-[200px] cursor-text" onClick={() => editor.commands.focus()}>
+      <div className="relative flex-1 overflow-y-auto bg-white min-h-[200px] cursor-text" onClick={() => editor.commands.focus()}>
         <EditorContent editor={editor} />
         {editor.isEmpty && placeholder && (
-          <div className="absolute top-[3.25rem] left-4 text-gray-400 pointer-events-none text-base">
+          <div className="absolute top-3 left-4 text-gray-400 pointer-events-none text-base">
             {placeholder}
           </div>
         )}
