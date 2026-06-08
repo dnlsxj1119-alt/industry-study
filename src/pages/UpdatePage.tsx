@@ -20,8 +20,6 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [viewingUpdate, setViewingUpdate] = useState<AppUpdate | null>(null);
-
   const isAdmin = currentMember === '다연';
 
   const loadUpdates = async () => {
@@ -38,6 +36,9 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
 
   useEffect(() => {
     loadUpdates();
+    localStorage.setItem('last_seen_update', new Date().toISOString());
+    // Also trigger a custom event so Sidebar can update instantly if needed
+    window.dispatchEvent(new Event('updates_seen'));
   }, []);
 
   const openNewForm = () => {
@@ -85,7 +86,6 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
     if (!window.confirm('정말 삭제하시겠습니까?')) return;
     try {
       await api.deleteUpdate(id);
-      if (viewingUpdate?.id === id) setViewingUpdate(null);
       loadUpdates();
     } catch (err) {
       alert('삭제 중 오류가 발생했습니다.');
@@ -129,112 +129,50 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
           <p className="text-gray-500">새로운 소식이 곧 추가될 예정입니다.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="divide-y divide-gray-100">
-            {updates.map(update => (
+        <div className="flex flex-col">
+          <div className="divide-y divide-gray-200">
+            {updates.map((update, index) => (
               <div 
                 key={update.id} 
-                onClick={() => setViewingUpdate(update)}
-                className="p-5 sm:p-6 hover:bg-gray-50 transition-colors cursor-pointer group relative"
+                className="py-12 first:pt-4 last:pb-0 relative group"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-12">
-                    <div className="flex items-center flex-wrap gap-2 mb-2">
-                      <span className="inline-flex items-center space-x-1 text-xs font-semibold text-gray-500">
-                        <span>{new Date(update.created_at).toLocaleDateString()}</span>
-                      </span>
-                      {isNew(update.created_at) && (
-                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold tracking-wide">
-                          NEW
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {update.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-4 leading-relaxed whitespace-pre-wrap">
-                      {update.content}
-                    </p>
+                {isAdmin && (
+                  <div className="absolute top-12 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => openEditForm(update)}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(update.id)}
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  
-                  {isAdmin && (
-                    <div className="absolute top-5 right-5 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); openEditForm(update); }}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-md transition-colors"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(update.id); }}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                )}
+                
+                <div className="flex items-center space-x-3 mb-6">
+                  <span className="text-base font-semibold text-gray-500">
+                    {new Date(update.created_at).toLocaleDateString()}
+                  </span>
+                  {index === 0 && isNew(update.created_at) && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold tracking-wide">
+                      NEW
+                    </span>
                   )}
+                </div>
+                
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight pr-16">
+                  {update.title}
+                </h3>
+                
+                <div className="prose prose-gray max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed text-base">
+                  {update.content}
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {viewingUpdate && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-white z-10 shrink-0">
-              <div className="flex items-center space-x-2 text-gray-500 text-sm font-medium">
-                <Bell className="w-4 h-4" />
-                <span>업데이트 상세</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                {isAdmin && (
-                  <>
-                    <button 
-                      onClick={() => { setViewingUpdate(null); openEditForm(viewingUpdate); }} 
-                      className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors flex items-center"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
-                    <button 
-                      onClick={() => { handleDelete(viewingUpdate.id); }} 
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex items-center"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                    <div className="w-px h-5 bg-gray-200 mx-1"></div>
-                  </>
-                )}
-                <button onClick={() => setViewingUpdate(null)} className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-6 md:p-8 overflow-y-auto">
-              <div className="mb-6">
-                <div className="flex items-center space-x-3 mb-4 text-sm text-gray-500">
-                  <span className="font-medium text-gray-900">{new Date(viewingUpdate.created_at).toLocaleDateString()}</span>
-                  <span>•</span>
-                  <span>{formatDistanceToNow(new Date(viewingUpdate.created_at), { addSuffix: true, locale: ko })}</span>
-                  {viewingUpdate.updated_at && viewingUpdate.updated_at !== viewingUpdate.created_at && (
-                    <>
-                      <span>•</span>
-                      <span className="italic">(수정됨)</span>
-                    </>
-                  )}
-                </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
-                  {viewingUpdate.title}
-                </h3>
-              </div>
-              
-              <div className="prose prose-gray max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed text-base border-t border-gray-100 pt-6">
-                {viewingUpdate.content}
-              </div>
-            </div>
           </div>
         </div>
       )}
