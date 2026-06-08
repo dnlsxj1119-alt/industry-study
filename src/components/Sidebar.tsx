@@ -33,7 +33,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
           const latest = updates[0];
           const isNew = differenceInDays(new Date(), new Date(latest.created_at)) <= 7;
           if (isNew) {
-            const lastSeenStr = localStorage.getItem('last_seen_update');
+            const lastSeenStr = localStorage.getItem(`last_seen_update_${currentMember}`);
             if (!lastSeenStr || new Date(lastSeenStr) < new Date(latest.created_at)) {
               setHasNewUpdate(true);
             }
@@ -52,7 +52,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
 
     window.addEventListener('updates_seen', handleUpdatesSeen);
     return () => window.removeEventListener('updates_seen', handleUpdatesSeen);
-  }, []);
+  }, [currentMember]);
 
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen border-r border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 shrink-0">
@@ -82,25 +82,24 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
 
       <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
         <button
-          onClick={() => onChangeTab('업데이트')}
+          onClick={() => {
+            onChangeTab('업데이트');
+            setHasNewUpdate(false);
+            localStorage.setItem(`last_seen_update_${currentMember}`, new Date().toISOString());
+          }}
           className={cn(
-            "flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm font-bold shadow-sm",
+            "flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium",
             currentTab === '업데이트'
-              ? "bg-blue-600 text-white"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 hover:from-blue-100 hover:to-indigo-100 border border-blue-100"
+              ? "bg-primary-50 text-primary-600"
+              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           )}
         >
           <div className="flex items-center">
-            <Sparkles className={cn("w-5 h-5 mr-3", currentTab === '업데이트' ? "text-white" : "text-blue-600")} />
+            <Sparkles className={cn("w-5 h-5 mr-3", currentTab === '업데이트' ? "text-primary-600" : "text-gray-400")} />
             업데이트
           </div>
           {hasNewUpdate && (
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide animate-pulse",
-              currentTab === '업데이트' ? "bg-white text-blue-600" : "bg-blue-600 text-white"
-            )}>
-              NEW
-            </span>
+            <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">NEW</span>
           )}
         </button>
 

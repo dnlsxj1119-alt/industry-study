@@ -32,6 +32,7 @@ export function Layout({ children, currentMember, onChangeMember, currentTab, on
       <MobileNav 
         currentTab={currentTab}
         onChangeTab={onChangeTab}
+        currentMember={currentMember}
       />
     </div>
   );

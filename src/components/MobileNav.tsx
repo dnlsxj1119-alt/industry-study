@@ -8,9 +8,10 @@ import { differenceInDays } from 'date-fns';
 interface MobileNavProps {
   currentTab: TabId;
   onChangeTab: (tab: TabId) => void;
+  currentMember: string;
 }
 
-export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
+export function MobileNav({ currentTab, onChangeTab, currentMember }: MobileNavProps) {
   const menuItems: { icon: any, label: TabId }[] = [
     { icon: Home, label: '홈' },
     { icon: LayoutDashboard, label: '보드' },
@@ -30,7 +31,7 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
           const latest = updates[0];
           const isNew = differenceInDays(new Date(), new Date(latest.created_at)) <= 7;
           if (isNew) {
-            const lastSeenStr = localStorage.getItem('last_seen_update');
+            const lastSeenStr = localStorage.getItem(`last_seen_update_${currentMember}`);
             if (!lastSeenStr || new Date(lastSeenStr) < new Date(latest.created_at)) {
               setHasNewUpdate(true);
             }
@@ -49,7 +50,7 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
 
     window.addEventListener('updates_seen', handleUpdatesSeen);
     return () => window.removeEventListener('updates_seen', handleUpdatesSeen);
-  }, []);
+  }, [currentMember]);
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 px-2 py-2 pb-safe overflow-x-auto">
@@ -57,7 +58,13 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
         {menuItems.map((item) => (
           <button
             key={item.label}
-            onClick={() => onChangeTab(item.label)}
+            onClick={() => {
+              onChangeTab(item.label);
+              if (item.label === '업데이트') {
+                setHasNewUpdate(false);
+                localStorage.setItem(`last_seen_update_${currentMember}`, new Date().toISOString());
+              }
+            }}
             className={cn(
               "flex flex-col items-center p-2 rounded-lg transition-colors min-w-[3rem]",
               currentTab === item.label ? "text-primary-600" : "text-gray-400 hover:text-gray-600"

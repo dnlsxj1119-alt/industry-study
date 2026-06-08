@@ -36,10 +36,10 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
 
   useEffect(() => {
     loadUpdates();
-    localStorage.setItem('last_seen_update', new Date().toISOString());
+    localStorage.setItem(`last_seen_update_${currentMember}`, new Date().toISOString());
     // Also trigger a custom event so Sidebar can update instantly if needed
     window.dispatchEvent(new Event('updates_seen'));
-  }, []);
+  }, [currentMember]);
 
   const openNewForm = () => {
     setEditingUpdate(null);
