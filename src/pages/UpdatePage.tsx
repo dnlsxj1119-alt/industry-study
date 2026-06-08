@@ -152,7 +152,7 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
                     <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                       {update.title}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-600 line-clamp-4 leading-relaxed whitespace-pre-wrap">
                       {update.content}
                     </p>
                   </div>
