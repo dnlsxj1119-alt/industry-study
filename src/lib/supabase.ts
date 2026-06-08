@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Post, Comment, Bookmark, Presentation } from '../types';
+import type { Post, Comment, Bookmark, Presentation, AppUpdate } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -375,6 +375,64 @@ export const api = {
       
     if (error) {
       console.error('Error setting weekly goal:', error);
+      throw error;
+    }
+  },
+
+  // --- Updates ---
+  async getUpdates(): Promise<AppUpdate[]> {
+    if (!isSupabaseConfigured) return [];
+    
+    const { data, error } = await supabase
+      .from('updates')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching updates:', error);
+      return [];
+    }
+    
+    return data || [];
+  },
+
+  async addUpdate(update: Omit<AppUpdate, 'id' | 'created_at' | 'updated_at'>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+    
+    const { error } = await supabase
+      .from('updates')
+      .insert([update]);
+      
+    if (error) {
+      console.error('Error adding update:', error);
+      throw error;
+    }
+  },
+
+  async editUpdate(id: string, update: Partial<Omit<AppUpdate, 'id' | 'created_at' | 'author_id'>>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+    
+    const { error } = await supabase
+      .from('updates')
+      .update({ ...update, updated_at: new Date().toISOString() })
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error editing update:', error);
+      throw error;
+    }
+  },
+
+  async deleteUpdate(id: string): Promise<void> {
+    if (!isSupabaseConfigured) return;
+    
+    const { error } = await supabase
+      .from('updates')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting update:', error);
       throw error;
     }
   }

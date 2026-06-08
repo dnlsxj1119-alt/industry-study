@@ -4,6 +4,7 @@ import { MessageCircle, Bookmark, ExternalLink, Pencil } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { HtmlRenderer } from '../HtmlRenderer';
 import { getMemberColorClasses, getMemberBorderClass } from '../../lib/utils';
 
 interface PostCardProps {
@@ -84,9 +85,9 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, hasC
       </p>
 
       <div className="bg-primary-50 rounded-lg p-3 mb-4">
-        <p className="text-sm text-primary-900 italic line-clamp-2">
-          "{post.opinion}"
-        </p>
+        <div className="text-sm text-primary-900 italic line-clamp-2">
+          <HtmlRenderer content={post.opinion} />
+        </div>
       </div>
 
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100 relative z-10">

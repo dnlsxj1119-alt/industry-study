@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Post, Comment, CommentType, Member } from '../../types';
 import { X, MessageCircle, ExternalLink, Bookmark, Pencil, Trash2 } from 'lucide-react';
+import { HtmlRenderer } from '../HtmlRenderer';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
@@ -191,7 +192,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                 <span className="w-1.5 h-1.5 rounded-full bg-primary-500 mr-2"></span>
                 기사 내용
               </h4>
-              <TextWithLinks text={post.content} className="text-gray-700 text-sm md:text-base leading-relaxed" />
+              <HtmlRenderer content={post.content} className="text-gray-700" />
             </div>
           )}
 
@@ -210,7 +211,7 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
                 <p className="text-xs text-gray-500">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko })}</p>
               </div>
             </div>
-            <TextWithLinks text={`"${post.opinion}"`} className="text-gray-800 font-medium leading-relaxed" />
+            <HtmlRenderer content={post.opinion} className="text-gray-800 font-medium leading-relaxed" />
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {post.tags.map(tag => (

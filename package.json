@@ -11,7 +11,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.0",
+    "@tiptap/extension-link": "^3.26.0",
+    "@tiptap/extension-underline": "^3.26.0",
+    "@tiptap/pm": "^3.26.0",
+    "@tiptap/react": "^3.26.0",
+    "@tiptap/starter-kit": "^3.26.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.3.0",
     "lucide-react": "^1.16.0",

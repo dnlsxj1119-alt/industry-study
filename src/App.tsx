@@ -5,7 +5,7 @@ import { PostModal } from './components/Board/PostModal';
 import { PostFormModal } from './components/Board/PostFormModal';
 import { Plus } from 'lucide-react';
 import { api, isSupabaseConfigured } from './lib/supabase';
-import { Post, Category, Member } from './types';
+import { Post, Category, Member, AppUpdate } from './types';
 import { TabId } from './components/Sidebar';
 import { NotificationBell } from './components/NotificationBell';
 
@@ -17,6 +17,7 @@ import { BookmarkPage } from './pages/BookmarkPage';
 import { PresentationPage } from './pages/PresentationPage';
 import { DiscussionPage } from './pages/DiscussionPage';
 import { MemberPage } from './pages/MemberPage';
+import { UpdatePage } from './pages/UpdatePage';
 
 function App() {
   const [currentMember, setCurrentMember] = useState<Member | null>(null);
@@ -132,7 +133,7 @@ function App() {
 
     switch (currentTab) {
       case '홈':
-        return <HomePage {...commonProps} />;
+        return <HomePage {...commonProps} onGoToUpdates={() => setCurrentTab('업데이트')} />;
       case '보드':
         return (
           <BoardPage 
@@ -148,10 +149,12 @@ function App() {
         return <BookmarkPage {...commonProps} />;
       case '발표자료':
         return <PresentationPage currentMember={currentMember} />;
+      case '업데이트':
+        return <UpdatePage currentMember={currentMember} />;
       case '멤버':
         return <MemberPage {...commonProps} />;
       default:
-        return <HomePage {...commonProps} />;
+        return <HomePage {...commonProps} onGoToUpdates={() => setCurrentTab('업데이트')} />;
     }
   };
 
@@ -183,7 +186,7 @@ function App() {
       {/* Header Actions */}
       <div className="flex justify-end items-center space-x-3 mb-6 sticky top-0 z-10 pointer-events-none">
         <NotificationBell currentMember={currentMember} onNotificationClick={handleNotificationClick} />
-        {currentTab !== '발표자료' && (
+        {!['발표자료', '업데이트'].includes(currentTab) && (
           <button 
             onClick={() => { setEditingPost(undefined); setIsFormOpen(true); }}
             className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto"

@@ -5,6 +5,8 @@ import { api } from '../lib/supabase';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { formatDistanceToNow, startOfMonth, differenceInCalendarWeeks, format as formatDate } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { RichTextEditor } from '../components/RichTextEditor';
+import { HtmlRenderer } from '../components/HtmlRenderer';
 
 interface PresentationPageProps {
   currentMember: Member;
@@ -228,8 +230,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                     )}
                   </h3>
                   
-                  <div className="text-gray-600 text-[13px] line-clamp-2 mb-4 leading-relaxed break-keep whitespace-pre-wrap">
-                    {p.content}
+                  <div className="text-gray-600 text-[13px] line-clamp-2 mb-4 leading-relaxed break-keep">
+                    <HtmlRenderer content={p.content} />
                   </div>
                   
                   <div className="flex flex-wrap gap-1.5 mt-auto mb-3">
@@ -331,13 +333,11 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
               
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">발표 내용</label>
-                <textarea
-                  required
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm resize-none"
-                  rows={6}
+                <RichTextEditor 
+                  content={content} 
+                  onChange={setContent} 
                   placeholder="- GPU 성능 경쟁에서 전력 안정성 경쟁으로 확대&#10;- Silicon Capacitor 역할"
+                  minHeight="200px"
                 />
               </div>
               
@@ -518,9 +518,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                 </div>
               </div>
               
-              <div className="prose prose-gray max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed text-base">
-                {viewingPost.content}
-              </div>
+              <HtmlRenderer content={viewingPost.content} className="text-gray-800 text-base border-t border-gray-100 pt-6" />
 
               {viewingPost.attachments && viewingPost.attachments.length > 0 && (
                 <div className="mt-10 border-t border-gray-100 pt-8">

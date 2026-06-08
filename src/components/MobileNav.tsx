@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LayoutDashboard, MessageSquare, Bookmark as BookmarkIcon, Calendar as CalendarIcon, Users, Mic } from 'lucide-react';
+import { Home, LayoutDashboard, Bookmark as BookmarkIcon, Calendar as CalendarIcon, Users, Mic, Bell } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { TabId } from './Sidebar';
 
@@ -15,6 +15,7 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
     { icon: CalendarIcon, label: '달력' },
     { icon: BookmarkIcon, label: '북마크' },
     { icon: Mic, label: '발표자료' },
+    { icon: Bell, label: '업데이트' },
     { icon: Users, label: '멤버' },
   ];
 

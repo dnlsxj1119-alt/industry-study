@@ -3,6 +3,7 @@ import { Post, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { InsightTags } from '../components/Widgets/InsightTags';
 import { WeeklyStatus } from '../components/Widgets/WeeklyStatus';
+import { RecentUpdatesWidget } from '../components/Widgets/RecentUpdatesWidget';
 import { Home } from 'lucide-react';
 
 interface HomePageProps {
@@ -13,9 +14,10 @@ interface HomePageProps {
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
   onEdit: (post: Post) => void;
+  onGoToUpdates: () => void;
 }
 
-export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: HomePageProps) {
+export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onGoToUpdates }: HomePageProps) {
   const recentPosts = posts.slice(0, 4);
 
   return (
@@ -54,6 +56,7 @@ export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostId
       </div>
 
       <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
+        <RecentUpdatesWidget onGoToUpdates={onGoToUpdates} />
         <WeeklyStatus posts={posts} currentMember={currentMember} />
         <InsightTags posts={posts} />
       </div>

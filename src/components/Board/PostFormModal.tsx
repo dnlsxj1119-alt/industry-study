@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Post, Category, Member } from '../../types';
-import { X } from 'lucide-react';
+import { X, Plus, CalendarIcon } from 'lucide-react';
+import { RichTextEditor } from '../RichTextEditor';
 import { api } from '../../lib/supabase';
 
 interface PostFormModalProps {
@@ -170,12 +171,22 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
 
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">내 의견 *</label>
-            <textarea required value={opinion} onChange={e => setOpinion(e.target.value)} rows={3} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none" placeholder="이 기사를 공유하는 이유나 내 생각을 적어주세요" />
+            <RichTextEditor 
+              content={opinion} 
+              onChange={setOpinion} 
+              placeholder="이 기사를 공유하는 이유나 내 생각을 적어주세요"
+              minHeight="150px"
+            />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">기사 내용 (선택)</label>
-            <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none" placeholder="기사 본문의 주요 내용을 복사해서 붙여넣을 수 있습니다 (상세 모달에서만 보임)" />
+            <RichTextEditor 
+              content={content} 
+              onChange={setContent} 
+              placeholder="기사 본문의 주요 내용을 복사해서 붙여넣을 수 있습니다 (상세 모달에서만 보임)"
+              minHeight="150px"
+            />
           </div>
 
           <div className="space-y-1">

@@ -72,3 +72,12 @@ export interface WeeklyGoal {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface AppUpdate {
+  id: string;
+  title: string;
+  content: string;
+  author_id: Member;
+  created_at: string;
+  updated_at: string;
+}
