@@ -132,10 +132,10 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
             {updates.map((update, index) => (
               <div 
                 key={update.id} 
-                className="py-8 first:pt-4 last:pb-0 relative group"
+                className="py-5 first:pt-4 last:pb-0 relative group"
               >
                 {isAdmin && (
-                  <div className="absolute top-8 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-5 right-0 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => openEditForm(update)}
                       className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
