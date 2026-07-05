@@ -1,5 +1,6 @@
 import React from 'react';
 import { Member } from '../types';
+import { MEMBERS } from '../constants/members';
 import { getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { cn } from '../lib/utils';
 
@@ -8,7 +9,7 @@ interface MemberSelectProps {
 }
 
 export function MemberSelect({ onSelect }: MemberSelectProps) {
-  const members: Member[] = ['다연', '유연', '준순'];
+  const members: Member[] = [...MEMBERS];
 
   return (
     <div className="fixed inset-0 bg-gray-50 flex items-center justify-center p-4 z-[100]">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Post, Member } from '../../types';
+import { Post, Member, WeeklyGoal } from '../../types';
+import { MEMBERS, ADMIN_MEMBER } from '../../constants/members';
 import { cn, getMemberColorClasses, getMemberBgClass, getMemberTextClass } from '../../lib/utils';
 import { isSameWeek, startOfWeek, format } from 'date-fns';
 import { api } from '../../lib/supabase';
@@ -11,7 +12,7 @@ interface WeeklyStatusProps {
 }
 
 export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
-  const members: Member[] = ['다연', '유연', '준순'];
+  const members: Member[] = [...MEMBERS];
   const [targetPerMember, setTargetPerMember] = useState(5);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(5);
@@ -52,7 +53,7 @@ export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
     return acc;
   }, {} as Record<Member, number>);
 
-  const isAdmin = currentMember === '다연';
+  const isAdmin = currentMember === ADMIN_MEMBER;
 
   return (
     <div className="bg-white rounded-2xl p-5 card-shadow border border-gray-100 relative">

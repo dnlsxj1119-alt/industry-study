@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppUpdate, Member } from '../types';
+import { ADMIN_MEMBER } from '../constants/members';
 import { api } from '../lib/supabase';
 import { Bell, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
@@ -20,7 +21,7 @@ export function UpdatePage({ currentMember }: UpdatePageProps) {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isAdmin = currentMember === '다연';
+  const isAdmin = currentMember === ADMIN_MEMBER;
 
   const loadUpdates = async () => {
     setIsLoading(true);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Post, Member } from '../types';
+import { Post, Member, Category } from '../types';
+import { MEMBERS } from '../constants/members';
 import { PostCard } from '../components/Board/PostCard';
 import { Users, ChevronRight } from 'lucide-react';
 import { WeeklyStatus } from '../components/Widgets/WeeklyStatus';
@@ -16,8 +17,8 @@ interface MemberPageProps {
 }
 
 export function MemberPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: MemberPageProps) {
-  const [selectedMember, setSelectedMember] = useState<Member>('다연');
-  const members: Member[] = ['다연', '유연', '준순'];
+  const [selectedMember, setSelectedMember] = useState<Member>(MEMBERS[0]);
+  const members: Member[] = [...MEMBERS];
   
   const memberPosts = posts.filter(p => p.author === selectedMember);
 

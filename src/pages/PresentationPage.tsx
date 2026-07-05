@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Presentation, Member, Attachment } from '../types';
+import { ADMIN_MEMBER } from '../constants/members';
 import { Mic, Search, Plus, X, Pencil, Trash2, Calendar as CalendarIcon, Paperclip, Download, Image as ImageIcon, FileText } from 'lucide-react';
 import { api } from '../lib/supabase';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
@@ -265,7 +266,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                     )}
                   </div>
                   
-                  {(p.author === currentMember || currentMember === '다연') && (
+                  {(p.author === currentMember || currentMember === ADMIN_MEMBER) && (
                     <div className="absolute top-4 right-4 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-gray-100">
                       <button 
                         onClick={(e) => { e.stopPropagation(); openEditModal(p); }} 
@@ -452,7 +453,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
                 <span>발표자료 상세</span>
               </div>
               <div className="flex items-center space-x-1">
-                {(viewingPost.author === currentMember || currentMember === '다연') && (
+                {(viewingPost.author === currentMember || currentMember === ADMIN_MEMBER) && (
                   <>
                     <button 
                       onClick={() => { setViewingPost(null); openEditModal(viewingPost); }} 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Post, Member } from '../types';
+import { Post, Member, Category } from '../types';
+import { MEMBERS } from '../constants/members';
 import { PostCard } from '../components/Board/PostCard';
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -95,7 +96,7 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
             {format(selectedDate, 'M월 d일', { locale: ko })} 공유된 글
           </h3>
           <div className="flex space-x-2">
-            {(['전체', '다연', '유연', '준순'] as const).map(author => (
+            {(['전체', ...MEMBERS] as const).map(author => (
               <button
                 key={author}
                 onClick={() => setSelectedAuthor(author)}

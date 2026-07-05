@@ -1,4 +1,6 @@
-export type Member = '다연' | '유연' | '준순';
+import { MEMBERS } from '../constants/members';
+
+export type Member = typeof MEMBERS[number];
 export type Category = string;
 export type CommentType = '동의' | '반론' | '추가자료' | '질문';
 

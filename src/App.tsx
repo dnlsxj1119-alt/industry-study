@@ -6,6 +6,7 @@ import { PostFormModal } from './components/Board/PostFormModal';
 import { Plus } from 'lucide-react';
 import { api, isSupabaseConfigured } from './lib/supabase';
 import { Post, Category, Member, AppUpdate } from './types';
+import { MEMBERS } from './constants/members';
 import { TabId } from './components/Sidebar';
 import { NotificationBell } from './components/NotificationBell';
 
@@ -37,7 +38,7 @@ function App() {
   // Check localStorage for saved member on initial load
   useEffect(() => {
     const savedMember = localStorage.getItem('study_board_member') as Member;
-    if (savedMember && ['다연', '유연', '준순'].includes(savedMember)) {
+    if (savedMember && MEMBERS.includes(savedMember)) {
       setCurrentMember(savedMember);
     }
   }, []);
