@@ -63,9 +63,11 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
               <span className={cn("px-2 py-1 rounded-md text-xs font-semibold border", statusColors[book.status])}>
                 {book.status}
               </span>
-              <span className="px-2 py-1 rounded-md text-xs font-semibold border bg-purple-50 text-purple-700 border-purple-200">
-                {book.category}
-              </span>
+              {book.category && (
+                <span className="px-2 py-1 rounded-md text-xs font-semibold border bg-purple-50 text-purple-700 border-purple-200">
+                  {book.category}
+                </span>
+              )}
               {isReadingRecord && (
                 <span className={cn("px-2 py-1 rounded-md text-xs font-bold border", pointColors[contributionPoint] || pointColors[1])} title="기여도">
                   +{contributionPoint}
@@ -73,7 +75,7 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
               )}
             </div>
             <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{book.title}</h2>
-            <p className="text-sm text-gray-500 font-medium mb-2">{book.author}</p>
+            {book.author && <p className="text-sm text-gray-500 font-medium mb-2">{book.author}</p>}
             <div className="flex items-center space-x-3 text-sm font-medium">
               {studyDateStr && <span className="text-gray-800 bg-gray-100 px-2 py-0.5 rounded">{studyDateStr} 기록</span>}
               <span className="text-gray-400 text-xs" title="등록일시">{formatDistanceToNow(new Date(book.created_at), { addSuffix: true, locale: ko })}</span>
@@ -105,7 +107,7 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
             <span className="text-sm font-bold text-gray-900">{book.member}</span>
           </div>
 
-          {!isReadingRecord && (
+          {!isReadingRecord && book.reason && (
             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
               <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">읽고 싶은 이유</h4>
               <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.reason}</p>
@@ -119,15 +121,21 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
                 <p className="text-gray-800 font-medium text-lg leading-relaxed">{book.core_topic}</p>
               </div>
 
-              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">배운 점</h4>
-                <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.learning}</p>
-              </div>
+              {book.content && (
+                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                  <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">책 내용</h4>
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.content}</p>
+                </div>
+              )}
 
-              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">내 삶에 적용할 점</h4>
-                <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.application}</p>
-              </div>
+              {(book.learning || book.application) && (
+                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                  <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">배운 점 / 적용할 점</h4>
+                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                    {[book.learning, book.application].filter(Boolean).join('\n\n')}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

@@ -90,11 +90,12 @@ export type BookStatus = '읽고 싶은 책' | '읽는 중' | '완독';
 export interface Book {
   id: string;
   title: string;
-  author: string;
-  category: string;
+  author?: string;
+  category?: string;
   status: BookStatus;
   reason?: string;
   core_topic?: string;
+  content?: string;
   learning?: string;
   application?: string;
   contribution_point?: number;

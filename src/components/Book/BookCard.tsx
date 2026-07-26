@@ -42,9 +42,11 @@ export function BookCard({ book, currentMember, onClick, onEdit }: BookCardProps
           <span className={cn("px-2.5 py-1 rounded-md text-xs font-semibold border", statusColors[book.status])}>
             {book.status}
           </span>
-          <span className="px-2.5 py-1 rounded-md text-xs font-semibold border bg-purple-50 text-purple-700 border-purple-200">
-            {book.category}
-          </span>
+          {book.category && (
+            <span className="px-2.5 py-1 rounded-md text-xs font-semibold border bg-purple-50 text-purple-700 border-purple-200">
+              {book.category}
+            </span>
+          )}
           {isReadingRecord && (
             <span className={cn("px-2 py-1 rounded-md text-xs font-bold border", pointColors[contributionPoint] || pointColors[1])} title="기여도">
               +{contributionPoint}
@@ -63,7 +65,7 @@ export function BookCard({ book, currentMember, onClick, onEdit }: BookCardProps
       </div>
 
       <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">{book.title}</h3>
-      <p className="text-xs text-gray-500 font-medium mb-3">{book.author}</p>
+      {book.author && <p className="text-xs text-gray-500 font-medium mb-3">{book.author}</p>}
 
       {previewText && (
         <div className="bg-primary-50 rounded-lg p-3 mb-4">

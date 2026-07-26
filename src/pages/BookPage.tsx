@@ -11,7 +11,7 @@ interface BookPageProps {
   onEdit: (book: Book) => void;
 }
 
-const STATUS_TABS: (BookStatus | '전체')[] = ['전체', '읽고 싶은 책', '읽는 중', '완독'];
+const STATUS_TABS: (BookStatus | '전체')[] = ['전체', '완독', '읽는 중', '읽고 싶은 책'];
 
 export function BookPage({ books, currentMember, onBookClick, onEdit }: BookPageProps) {
   const [selectedMember, setSelectedMember] = useState<Member | '전체'>('전체');

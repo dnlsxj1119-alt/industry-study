@@ -11,7 +11,11 @@ interface BookFormModalProps {
   onSuccess: () => void;
 }
 
-const STATUS_OPTIONS: BookStatus[] = ['읽고 싶은 책', '읽는 중', '완독'];
+const STATUS_OPTIONS: BookStatus[] = ['완독', '읽는 중', '읽고 싶은 책'];
+
+function mergeLearningFields(book?: Book): string {
+  return [book?.learning, book?.application].filter(Boolean).join('\n\n');
+}
 
 export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: BookFormModalProps) {
   const [title, setTitle] = useState(editBook?.title || '');
@@ -20,8 +24,8 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
   const [status, setStatus] = useState<BookStatus>(editBook?.status || '읽고 싶은 책');
   const [reason, setReason] = useState(editBook?.reason || '');
   const [coreTopic, setCoreTopic] = useState(editBook?.core_topic || '');
-  const [learning, setLearning] = useState(editBook?.learning || '');
-  const [application, setApplication] = useState(editBook?.application || '');
+  const [content, setContent] = useState(editBook?.content || '');
+  const [learning, setLearning] = useState(mergeLearningFields(editBook));
   const [contributionPoint, setContributionPoint] = useState<number>(editBook?.contribution_point || 1);
   const [studyDate, setStudyDate] = useState(editBook?.study_date || new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,28 +40,27 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
       setError('Supabase 환경 변수가 설정되지 않아 저장할 수 없습니다.');
       return;
     }
-    if (!title.trim() || !author.trim() || !category.trim()) return;
-    if (!isReadingRecord && !reason.trim()) return;
-    if (isReadingRecord && (!coreTopic.trim() || !learning.trim() || !application.trim() || !studyDate)) return;
+    if (!title.trim()) return;
+    if (isReadingRecord && !coreTopic.trim()) return;
 
     setIsSubmitting(true);
 
     const basePayload = {
       title: title.trim(),
-      author: author.trim(),
-      category: category.trim(),
+      author: author.trim() || undefined,
+      category: category.trim() || undefined,
       status,
     };
 
     const readingPayload = isReadingRecord
       ? {
           core_topic: coreTopic.trim(),
-          learning: learning.trim(),
-          application: application.trim(),
+          content: content.trim() || undefined,
+          learning: learning.trim() || undefined,
           contribution_point: contributionPoint,
-          study_date: studyDate,
+          study_date: studyDate || undefined,
         }
-      : { reason: reason.trim() };
+      : { reason: reason.trim() || undefined };
 
     try {
       if (editBook) {
@@ -119,20 +122,19 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">저자 *</label>
-              <input required value={author} onChange={e => setAuthor(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: 레이 달리오" />
+              <label className="text-sm font-semibold text-gray-700">저자 (선택)</label>
+              <input value={author} onChange={e => setAuthor(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: 레이 달리오" />
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">카테고리 *</label>
-              <input required value={category} onChange={e => setCategory(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: 경제/경영" />
+              <label className="text-sm font-semibold text-gray-700">카테고리 (선택)</label>
+              <input value={category} onChange={e => setCategory(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: 경제/경영" />
             </div>
           </div>
 
           {!isReadingRecord && (
             <div className="space-y-1">
-              <label className="text-sm font-semibold text-gray-700">읽고 싶은 이유 *</label>
+              <label className="text-sm font-semibold text-gray-700">읽고 싶은 이유 (선택)</label>
               <textarea
-                required
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 rows={3}
@@ -145,10 +147,9 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
           {isReadingRecord && (
             <>
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">독서 기록 날짜 *</label>
+                <label className="text-sm font-semibold text-gray-700">독서 기록 날짜 (선택)</label>
                 <input
                   type="date"
-                  required
                   value={studyDate}
                   onChange={(e) => setStudyDate(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all bg-white"
@@ -161,26 +162,24 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">배운 점 *</label>
+                <label className="text-sm font-semibold text-gray-700">책 내용 (선택)</label>
                 <textarea
-                  required
-                  value={learning}
-                  onChange={e => setLearning(e.target.value)}
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
                   rows={3}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"
-                  placeholder="이 책을 통해 배운 점을 적어주세요"
+                  placeholder="책의 주요 내용을 적어주세요"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">내 삶에 적용할 점 *</label>
+                <label className="text-sm font-semibold text-gray-700">배운 점 / 적용할 점 (선택)</label>
                 <textarea
-                  required
-                  value={application}
-                  onChange={e => setApplication(e.target.value)}
+                  value={learning}
+                  onChange={e => setLearning(e.target.value)}
                   rows={3}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"
-                  placeholder="내 삶에 어떻게 적용할지 적어주세요"
+                  placeholder="이 책을 통해 배운 점과 내 삶에 적용할 점을 적어주세요"
                 />
               </div>
 
