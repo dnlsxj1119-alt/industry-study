@@ -21,7 +21,7 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
   const [title, setTitle] = useState(editBook?.title || '');
   const [author, setAuthor] = useState(editBook?.author || '');
   const [category, setCategory] = useState(editBook?.category || '');
-  const [status, setStatus] = useState<BookStatus>(editBook?.status || '읽고 싶은 책');
+  const [status, setStatus] = useState<BookStatus>(editBook?.status || '완독');
   const [reason, setReason] = useState(editBook?.reason || '');
   const [coreTopic, setCoreTopic] = useState(editBook?.core_topic || '');
   const [content, setContent] = useState(editBook?.content || '');
