@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Book, BookStatus, Member } from '../../types';
 import { X } from 'lucide-react';
-import { api } from '../../lib/supabase';
+import { api, isSupabaseConfigured } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 
 interface BookFormModalProps {
@@ -25,11 +25,17 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
   const [contributionPoint, setContributionPoint] = useState<number>(editBook?.contribution_point || 1);
   const [studyDate, setStudyDate] = useState(editBook?.study_date || new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isReadingRecord = status !== '읽고 싶은 책';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (!isSupabaseConfigured) {
+      setError('Supabase 환경 변수가 설정되지 않아 저장할 수 없습니다.');
+      return;
+    }
     if (!title.trim() || !author.trim() || !category.trim()) return;
     if (!isReadingRecord && !reason.trim()) return;
     if (isReadingRecord && (!coreTopic.trim() || !learning.trim() || !application.trim() || !studyDate)) return;
@@ -60,6 +66,9 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
         await api.addBook({ ...basePayload, ...readingPayload, member: currentMember } as Omit<Book, 'id' | 'created_at' | 'updated_at'>);
       }
       onSuccess();
+    } catch (err: any) {
+      console.error('Error saving book:', err);
+      setError(err?.message || '책 저장 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -76,6 +85,12 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2.5 rounded-xl text-sm font-medium">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-1">
             <label className="text-sm font-semibold text-gray-700">독서 상태 *</label>
             <div className="flex gap-2">
