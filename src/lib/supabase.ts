@@ -112,9 +112,41 @@ export const api = {
         ...comment,
         created_at: new Date().toISOString()
       }]);
-      
+
     if (error) {
       console.error('Error adding comment:', error);
+      throw error;
+    }
+  },
+
+  async getBookComments(bookId: string): Promise<Comment[]> {
+    if (!isSupabaseConfigured) return [];
+
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('book_id', bookId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching book comments:', error);
+      throw error;
+    }
+    return data || [];
+  },
+
+  async addBookComment(comment: Omit<Comment, 'id' | 'created_at' | 'updated_at'>) {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('comments')
+      .insert([{
+        ...comment,
+        created_at: new Date().toISOString()
+      }]);
+
+    if (error) {
+      console.error('Error adding book comment:', error);
       throw error;
     }
   },

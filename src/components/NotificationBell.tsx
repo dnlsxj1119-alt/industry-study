@@ -7,7 +7,7 @@ import { ko } from 'date-fns/locale';
 
 interface NotificationBellProps {
   currentMember: Member | null;
-  onNotificationClick: (postId: string) => void;
+  onNotificationClick: (notification: Notification) => void;
 }
 
 export function NotificationBell({ currentMember, onNotificationClick }: NotificationBellProps) {
@@ -80,7 +80,7 @@ export function NotificationBell({ currentMember, onNotificationClick }: Notific
       setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, is_read: true } : n));
     }
     setIsOpen(false);
-    onNotificationClick(notification.post_id);
+    onNotificationClick(notification);
   };
 
   if (!currentMember) return null;
@@ -114,7 +114,7 @@ export function NotificationBell({ currentMember, onNotificationClick }: Notific
                   <Bell className="w-6 h-6 text-gray-300" />
                 </div>
                 <p className="text-gray-600 text-sm font-medium">새로운 알림이 없습니다</p>
-                <p className="text-gray-400 text-xs mt-1">게시글에 댓글이 달리면 이곳에 표시됩니다</p>
+                <p className="text-gray-400 text-xs mt-1">게시글이나 책 기록에 댓글이 달리면 이곳에 표시됩니다</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-50">

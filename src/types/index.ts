@@ -23,7 +23,8 @@ export interface Post {
 
 export interface Comment {
   id: string;
-  post_id: string;
+  post_id?: string;
+  book_id?: string;
   author: Member;
   type: CommentType;
   content: string;
@@ -62,7 +63,8 @@ export interface Notification {
   recipient_id: Member;
   actor_id: Member;
   type: 'comment';
-  post_id: string;
+  post_id?: string;
+  book_id?: string;
   comment_id: string;
   message: string;
   is_read: boolean;

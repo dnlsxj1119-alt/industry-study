@@ -1,6 +1,6 @@
 import React from 'react';
 import { Book, Member } from '../../types';
-import { Pencil } from 'lucide-react';
+import { Pencil, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -10,6 +10,7 @@ import { HtmlRenderer } from '../HtmlRenderer';
 interface BookCardProps {
   book: Book;
   currentMember: Member;
+  commentCount?: number;
   onClick: () => void;
   onEdit: (book: Book) => void;
 }
@@ -26,7 +27,7 @@ const pointColors: Record<number, string> = {
   3: 'bg-rose-100 text-rose-800 border-rose-200',
 };
 
-export function BookCard({ book, currentMember, onClick, onEdit }: BookCardProps) {
+export function BookCard({ book, currentMember, commentCount = 0, onClick, onEdit }: BookCardProps) {
   const timeAgo = formatDistanceToNow(new Date(book.created_at), { addSuffix: true, locale: ko });
   const isReadingRecord = book.status !== '읽고 싶은 책';
   const contributionPoint = book.contribution_point ?? 1;
@@ -84,6 +85,10 @@ export function BookCard({ book, currentMember, onClick, onEdit }: BookCardProps
           <span className="text-xs text-gray-700 font-bold">{book.member}</span>
           <span className="text-gray-300 text-xs">•</span>
           <span className="text-xs text-gray-400 font-medium" title={`등록일: ${new Date(book.created_at).toLocaleString()}`}>{timeAgo}</span>
+        </div>
+        <div className="flex items-center text-gray-500">
+          <MessageCircle className="w-4 h-4 mr-1" />
+          <span className="text-xs font-medium">{commentCount}</span>
         </div>
       </div>
     </div>

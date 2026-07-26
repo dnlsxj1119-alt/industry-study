@@ -7,7 +7,7 @@ import { BookModal } from './components/Book/BookModal';
 import { BookFormModal } from './components/Book/BookFormModal';
 import { Plus } from 'lucide-react';
 import { api, isSupabaseConfigured } from './lib/supabase';
-import { Post, Category, Member, AppUpdate, Book } from './types';
+import { Post, Category, Member, AppUpdate, Book, Notification } from './types';
 import { MEMBERS } from './constants/members';
 import { TabId } from './components/Sidebar';
 import { NotificationBell } from './components/NotificationBell';
@@ -39,6 +39,7 @@ function App() {
   const [isBookFormOpen, setIsBookFormOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [commentedMembers, setCommentedMembers] = useState<Record<string, string[]>>({});
+  const [bookCommentCounts, setBookCommentCounts] = useState<Record<string, number>>({});
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<string[]>(['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장']);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +76,14 @@ function App() {
       }
       setCommentCounts(counts);
       setCommentedMembers(members);
+
+      // Load comment counts for books
+      const bookCounts: Record<string, number> = {};
+      for (const book of fetchedBooks) {
+        const bookComments = await api.getBookComments(book.id);
+        bookCounts[book.id] = bookComments.length;
+      }
+      setBookCommentCounts(bookCounts);
 
       // Load bookmarks for current user
       if (currentMember) {
@@ -135,6 +144,7 @@ function App() {
       currentMember,
       commentCounts,
       commentedMembers,
+      bookCommentCounts,
       bookmarkedPostIds,
       onToggleBookmark: handleToggleBookmark,
       onPostClick: setSelectedPost,
@@ -161,6 +171,7 @@ function App() {
           <BookPage
             books={books}
             currentMember={currentMember}
+            commentCounts={bookCommentCounts}
             onBookClick={setSelectedBook}
             onEdit={(book: Book) => {
               setEditingBook(book);
@@ -192,11 +203,23 @@ function App() {
     }
   };
 
-  const handleNotificationClick = async (postId: string) => {
-    let post = posts.find(p => p.id === postId);
+  const handleNotificationClick = async (notification: Notification) => {
+    if (notification.book_id) {
+      let book = books.find(b => b.id === notification.book_id);
+      if (!book) {
+        const allBooks = await api.getBooks();
+        book = allBooks.find(b => b.id === notification.book_id);
+      }
+      if (book) {
+        setSelectedBook(book);
+      }
+      return;
+    }
+
+    let post = posts.find(p => p.id === notification.post_id);
     if (!post) {
       const allPosts = await api.getPosts();
-      post = allPosts.find(p => p.id === postId);
+      post = allPosts.find(p => p.id === notification.post_id);
     }
     if (post) {
       setSelectedPost(post);

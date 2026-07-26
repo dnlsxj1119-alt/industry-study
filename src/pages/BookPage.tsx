@@ -7,13 +7,14 @@ import { cn } from '../lib/utils';
 interface BookPageProps {
   books: Book[];
   currentMember: Member;
+  commentCounts?: Record<string, number>;
   onBookClick: (book: Book) => void;
   onEdit: (book: Book) => void;
 }
 
 const STATUS_TABS: (BookStatus | '전체')[] = ['전체', '완독', '읽는 중', '읽고 싶은 책'];
 
-export function BookPage({ books, currentMember, onBookClick, onEdit }: BookPageProps) {
+export function BookPage({ books, currentMember, commentCounts = {}, onBookClick, onEdit }: BookPageProps) {
   const [selectedMember, setSelectedMember] = useState<Member | '전체'>('전체');
   const [selectedStatus, setSelectedStatus] = useState<BookStatus | '전체'>('전체');
 
@@ -67,6 +68,7 @@ export function BookPage({ books, currentMember, onBookClick, onEdit }: BookPage
             key={book.id}
             book={book}
             currentMember={currentMember}
+            commentCount={commentCounts[book.id] || 0}
             onClick={() => onBookClick(book)}
             onEdit={onEdit}
           />

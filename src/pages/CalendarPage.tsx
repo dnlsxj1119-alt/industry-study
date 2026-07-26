@@ -12,6 +12,7 @@ interface CalendarPageProps {
   books: Book[];
   currentMember: Member;
   commentCounts: Record<string, number>;
+  bookCommentCounts?: Record<string, number>;
   bookmarkedPostIds: Set<string>;
   onToggleBookmark: (e: React.MouseEvent, postId: string) => void;
   onPostClick: (post: Post) => void;
@@ -20,7 +21,7 @@ interface CalendarPageProps {
   onEditBook: (book: Book) => void;
 }
 
-export function CalendarPage({ posts, books, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onBookClick, onEditBook }: CalendarPageProps) {
+export function CalendarPage({ posts, books, currentMember, commentCounts, bookCommentCounts = {}, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onBookClick, onEditBook }: CalendarPageProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedAuthor, setSelectedAuthor] = useState<Member | '전체'>('전체');
@@ -185,6 +186,7 @@ export function CalendarPage({ posts, books, currentMember, commentCounts, bookm
               key={book.id}
               book={book}
               currentMember={currentMember}
+              commentCount={bookCommentCounts[book.id] || 0}
               onClick={() => onBookClick(book)}
               onEdit={onEditBook}
             />
