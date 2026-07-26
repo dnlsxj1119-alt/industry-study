@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { getMemberColorClasses, getMemberBorderClass } from '../../lib/utils';
+import { HtmlRenderer } from '../HtmlRenderer';
 
 interface BookCardProps {
   book: Book;
@@ -70,7 +71,7 @@ export function BookCard({ book, currentMember, onClick, onEdit }: BookCardProps
       {previewText && (
         <div className="bg-primary-50 rounded-lg p-3 mb-4">
           <div className="text-sm text-primary-900 italic line-clamp-2">
-            {previewText}
+            <HtmlRenderer content={previewText} />
           </div>
         </div>
       )}

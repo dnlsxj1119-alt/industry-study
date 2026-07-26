@@ -5,6 +5,7 @@ import { cn, getMemberTextClass } from '../../lib/utils';
 import { api } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { HtmlRenderer } from '../HtmlRenderer';
 
 interface BookModalProps {
   book: Book;
@@ -110,7 +111,7 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
           {!isReadingRecord && book.reason && (
             <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
               <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">읽고 싶은 이유</h4>
-              <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.reason}</p>
+              <HtmlRenderer content={book.reason} className="text-gray-800" />
             </div>
           )}
 
@@ -124,16 +125,15 @@ export function BookModal({ book, currentMember, onClose, onEdit }: BookModalPro
               {book.content && (
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
                   <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">책 내용</h4>
-                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{book.content}</p>
+                  <HtmlRenderer content={book.content} className="text-gray-800" />
                 </div>
               )}
 
               {(book.learning || book.application) && (
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                  <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">배운 점 / 적용할 점</h4>
-                  <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                    {[book.learning, book.application].filter(Boolean).join('\n\n')}
-                  </p>
+                  <h4 className="text-sm font-bold text-gray-500 mb-2 uppercase tracking-wider">느낀 점 / 적용할 점</h4>
+                  {book.learning && <HtmlRenderer content={book.learning} className="text-gray-800" />}
+                  {book.application && <HtmlRenderer content={book.application} className="text-gray-800 mt-3" />}
                 </div>
               )}
             </>

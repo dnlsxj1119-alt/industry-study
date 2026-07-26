@@ -3,6 +3,7 @@ import { Book, BookStatus, Member } from '../../types';
 import { X } from 'lucide-react';
 import { api, isSupabaseConfigured } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
+import { RichTextEditor } from '../RichTextEditor';
 
 interface BookFormModalProps {
   currentMember: Member;
@@ -134,12 +135,11 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
           {!isReadingRecord && (
             <div className="space-y-1">
               <label className="text-sm font-semibold text-gray-700">읽고 싶은 이유 (선택)</label>
-              <textarea
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"
+              <RichTextEditor
+                content={reason}
+                onChange={setReason}
                 placeholder="이 책을 읽고 싶은 이유를 적어주세요"
+                minHeight="100px"
               />
             </div>
           )}
@@ -163,23 +163,21 @@ export function BookFormModal({ currentMember, editBook, onClose, onSuccess }: B
 
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-gray-700">책 내용 (선택)</label>
-                <textarea
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"
+                <RichTextEditor
+                  content={content}
+                  onChange={setContent}
                   placeholder="책의 주요 내용을 적어주세요"
+                  minHeight="120px"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">배운 점 / 적용할 점 (선택)</label>
-                <textarea
-                  value={learning}
-                  onChange={e => setLearning(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors resize-none"
-                  placeholder="이 책을 통해 배운 점과 내 삶에 적용할 점을 적어주세요"
+                <label className="text-sm font-semibold text-gray-700">느낀 점 / 적용할 점 (선택)</label>
+                <RichTextEditor
+                  content={learning}
+                  onChange={setLearning}
+                  placeholder="이 책을 통해 느낀 점과 내 삶에 적용할 점을 적어주세요"
+                  minHeight="120px"
                 />
               </div>
 
