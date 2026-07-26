@@ -84,3 +84,22 @@ export interface AppUpdate {
   created_at: string;
   updated_at: string;
 }
+
+export type BookStatus = '읽고 싶은 책' | '읽는 중' | '완독';
+
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  status: BookStatus;
+  reason?: string;
+  core_topic?: string;
+  learning?: string;
+  application?: string;
+  contribution_point?: number;
+  study_date?: string;
+  member: Member;
+  created_at: string;
+  updated_at: string;
+}

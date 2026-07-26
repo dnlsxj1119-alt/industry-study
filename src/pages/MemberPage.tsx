@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Post, Member, Category } from '../types';
+import { Post, Book, Member, Category } from '../types';
 import { MEMBERS } from '../constants/members';
 import { PostCard } from '../components/Board/PostCard';
 import { Users, ChevronRight } from 'lucide-react';
@@ -8,6 +8,7 @@ import { cn, getMemberColorClasses, getMemberBorderClass, getMemberTextClass } f
 
 interface MemberPageProps {
   posts: Post[];
+  books?: Book[];
   currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
@@ -16,7 +17,7 @@ interface MemberPageProps {
   onEdit: (post: Post) => void;
 }
 
-export function MemberPage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: MemberPageProps) {
+export function MemberPage({ posts, books = [], currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit }: MemberPageProps) {
   const [selectedMember, setSelectedMember] = useState<Member>(MEMBERS[0]);
   const members: Member[] = [...MEMBERS];
   
@@ -61,7 +62,7 @@ export function MemberPage({ posts, currentMember, commentCounts, bookmarkedPost
             ))}
           </div>
           
-          <WeeklyStatus posts={posts} />
+          <WeeklyStatus posts={posts} books={books} />
         </div>
 
         <div className="flex-1">

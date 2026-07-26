@@ -1,5 +1,5 @@
 import React from 'react';
-import { Post, Member } from '../types';
+import { Post, Book, Member } from '../types';
 import { PostCard } from '../components/Board/PostCard';
 import { InsightTags } from '../components/Widgets/InsightTags';
 import { WeeklyStatus } from '../components/Widgets/WeeklyStatus';
@@ -7,6 +7,7 @@ import { Home } from 'lucide-react';
 
 interface HomePageProps {
   posts: Post[];
+  books?: Book[];
   currentMember: Member;
   commentCounts: Record<string, number>;
   bookmarkedPostIds: Set<string>;
@@ -16,7 +17,7 @@ interface HomePageProps {
   onGoToUpdates: () => void;
 }
 
-export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onGoToUpdates }: HomePageProps) {
+export function HomePage({ posts, books = [], currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onGoToUpdates }: HomePageProps) {
   const recentPosts = posts.slice(0, 4);
 
   return (
@@ -55,7 +56,7 @@ export function HomePage({ posts, currentMember, commentCounts, bookmarkedPostId
       </div>
 
       <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
-        <WeeklyStatus posts={posts} currentMember={currentMember} />
+        <WeeklyStatus posts={posts} books={books} currentMember={currentMember} />
         <InsightTags posts={posts} />
       </div>
     </div>

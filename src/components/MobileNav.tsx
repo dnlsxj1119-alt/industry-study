@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, LayoutDashboard, Calendar as CalendarIcon, Users, Mic, Sparkles } from 'lucide-react';
+import { Home, LayoutDashboard, Calendar as CalendarIcon, Users, Mic, Sparkles, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { TabId } from './Sidebar';
 import { api } from '../lib/supabase';
@@ -15,6 +15,7 @@ export function MobileNav({ currentTab, onChangeTab, currentMember }: MobileNavP
   const menuItems: { icon: any, label: TabId }[] = [
     { icon: Home, label: '홈' },
     { icon: LayoutDashboard, label: '보드' },
+    { icon: BookOpen, label: '책' },
     { icon: CalendarIcon, label: '달력' },
     { icon: Mic, label: '발표자료' },
     { icon: Sparkles, label: '업데이트' },

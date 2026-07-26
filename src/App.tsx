@@ -3,9 +3,11 @@ import { MemberSelect } from './components/MemberSelect';
 import { Layout } from './components/Layout';
 import { PostModal } from './components/Board/PostModal';
 import { PostFormModal } from './components/Board/PostFormModal';
+import { BookModal } from './components/Book/BookModal';
+import { BookFormModal } from './components/Book/BookFormModal';
 import { Plus } from 'lucide-react';
 import { api, isSupabaseConfigured } from './lib/supabase';
-import { Post, Category, Member, AppUpdate } from './types';
+import { Post, Category, Member, AppUpdate, Book } from './types';
 import { MEMBERS } from './constants/members';
 import { TabId } from './components/Sidebar';
 import { NotificationBell } from './components/NotificationBell';
@@ -13,6 +15,7 @@ import { NotificationBell } from './components/NotificationBell';
 // Pages
 import { HomePage } from './pages/HomePage';
 import { BoardPage } from './pages/BoardPage';
+import { BookPage } from './pages/BookPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { BookmarkPage } from './pages/BookmarkPage';
 import { PresentationPage } from './pages/PresentationPage';
@@ -29,6 +32,11 @@ function App() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [editingBook, setEditingBook] = useState<Book | undefined>(undefined);
+  const [isBookFormOpen, setIsBookFormOpen] = useState(false);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [commentedMembers, setCommentedMembers] = useState<Record<string, string[]>>({});
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
@@ -53,7 +61,10 @@ function App() {
     try {
       const fetchedPosts = await api.getPosts();
       setPosts(fetchedPosts);
-      
+
+      const fetchedBooks = await api.getBooks();
+      setBooks(fetchedBooks);
+
       // Load comment counts and commented members
       const counts: Record<string, number> = {};
       const members: Record<string, string[]> = {};
@@ -120,6 +131,7 @@ function App() {
   const renderCurrentPage = () => {
     const commonProps = {
       posts,
+      books,
       currentMember,
       commentCounts,
       commentedMembers,
@@ -137,15 +149,36 @@ function App() {
         return <HomePage {...commonProps} onGoToUpdates={() => setCurrentTab('업데이트')} />;
       case '보드':
         return (
-          <BoardPage 
+          <BoardPage
             {...commonProps}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
             categories={categories}
           />
         );
+      case '책':
+        return (
+          <BookPage
+            books={books}
+            currentMember={currentMember}
+            onBookClick={setSelectedBook}
+            onEdit={(book: Book) => {
+              setEditingBook(book);
+              setIsBookFormOpen(true);
+            }}
+          />
+        );
       case '달력':
-        return <CalendarPage {...commonProps} />;
+        return (
+          <CalendarPage
+            {...commonProps}
+            onBookClick={setSelectedBook}
+            onEditBook={(book: Book) => {
+              setEditingBook(book);
+              setIsBookFormOpen(true);
+            }}
+          />
+        );
       case '북마크':
         return <BookmarkPage {...commonProps} />;
       case '발표자료':
@@ -187,8 +220,16 @@ function App() {
       {/* Header Actions */}
       <div className="flex justify-end items-center space-x-3 mb-6 sticky top-0 z-10 pointer-events-none">
         <NotificationBell currentMember={currentMember} onNotificationClick={handleNotificationClick} />
-        {!['발표자료', '업데이트'].includes(currentTab) && (
-          <button 
+        {currentTab === '책' ? (
+          <button
+            onClick={() => { setEditingBook(undefined); setIsBookFormOpen(true); }}
+            className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto"
+          >
+            <Plus className="w-5 h-5 md:mr-2" />
+            <span className="hidden md:inline">책 등록하기</span>
+          </button>
+        ) : !['발표자료', '업데이트'].includes(currentTab) && (
+          <button
             onClick={() => { setEditingPost(undefined); setIsFormOpen(true); }}
             className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto"
           >
@@ -241,7 +282,38 @@ function App() {
             setIsFormOpen(false);
             setEditingPost(undefined);
             loadData();
-          }} 
+          }}
+        />
+      )}
+
+      {selectedBook && (
+        <BookModal
+          book={selectedBook}
+          currentMember={currentMember}
+          onClose={() => {
+            setSelectedBook(null);
+            loadData();
+          }}
+          onEdit={(book) => {
+            setEditingBook(book);
+            setIsBookFormOpen(true);
+          }}
+        />
+      )}
+
+      {isBookFormOpen && (
+        <BookFormModal
+          currentMember={currentMember}
+          editBook={editingBook}
+          onClose={() => {
+            setIsBookFormOpen(false);
+            setEditingBook(undefined);
+          }}
+          onSuccess={() => {
+            setIsBookFormOpen(false);
+            setEditingBook(undefined);
+            loadData();
+          }}
         />
       )}
     </Layout>

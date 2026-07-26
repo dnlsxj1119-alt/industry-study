@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Post, Member, WeeklyGoal } from '../../types';
+import { Post, Book, Member, WeeklyGoal } from '../../types';
 import { MEMBERS, ADMIN_MEMBER } from '../../constants/members';
 import { cn, getMemberColorClasses, getMemberBgClass, getMemberTextClass } from '../../lib/utils';
 import { isSameWeek, startOfWeek, format } from 'date-fns';
@@ -8,10 +8,11 @@ import { Edit2, X } from 'lucide-react';
 
 interface WeeklyStatusProps {
   posts: Post[];
+  books?: Book[];
   currentMember?: Member; // Added optional to support existing usage but allow admin check
 }
 
-export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
+export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusProps) {
   const members: Member[] = [...MEMBERS];
   const [targetPerMember, setTargetPerMember] = useState(5);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,11 +48,22 @@ export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
     return isSameWeek(dateToUse, now, { weekStartsOn: 1 }); // Assuming week starts on Monday
   });
 
+  // Only 읽는 중 / 완독 books have a study_date and count toward contribution stats
+  // ('읽고 싶은 책' entries are excluded entirely).
+  const thisWeekBooks = books.filter(b => {
+    if (b.status === '읽고 싶은 책' || !b.study_date) return false;
+    return isSameWeek(new Date(b.study_date), now, { weekStartsOn: 1 });
+  });
+
   // Calculate contribution points per member (falls back to 1 point per post for legacy data)
   const uploadsByMember = members.reduce((acc, member) => {
-    acc[member] = thisWeekPosts
+    const postPoints = thisWeekPosts
       .filter(p => p.author === member)
       .reduce((sum, p) => sum + (p.contribution_point ?? 1), 0);
+    const bookPoints = thisWeekBooks
+      .filter(b => b.member === member)
+      .reduce((sum, b) => sum + (b.contribution_point ?? 1), 0);
+    acc[member] = postPoints + bookPoints;
     return acc;
   }, {} as Record<Member, number>);
 

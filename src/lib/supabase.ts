@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Post, Comment, Bookmark, Presentation, AppUpdate } from '../types';
+import type { Post, Comment, Bookmark, Presentation, AppUpdate, Book } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -425,14 +425,78 @@ export const api = {
 
   async deleteUpdate(id: string): Promise<void> {
     if (!isSupabaseConfigured) return;
-    
+
     const { error } = await supabase
       .from('updates')
       .delete()
       .eq('id', id);
-      
+
     if (error) {
       console.error('Error deleting update:', error);
+      throw error;
+    }
+  },
+
+  // --- Books ---
+  async getBooks(): Promise<Book[]> {
+    if (!isSupabaseConfigured) return [];
+
+    const { data, error } = await supabase
+      .from('books')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching books:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  async addBook(book: Omit<Book, 'id' | 'created_at' | 'updated_at'>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('books')
+      .insert([{
+        ...book,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }]);
+
+    if (error) {
+      console.error('Error adding book:', error);
+      throw error;
+    }
+  },
+
+  async updateBook(id: string, updates: Partial<Omit<Book, 'id' | 'created_at' | 'member'>>): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('books')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating book:', error);
+      throw error;
+    }
+  },
+
+  async deleteBook(id: string): Promise<void> {
+    if (!isSupabaseConfigured) return;
+
+    const { error } = await supabase
+      .from('books')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting book:', error);
       throw error;
     }
   }

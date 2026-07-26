@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Home, LayoutDashboard, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon, Mic, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, LayoutDashboard, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon, Mic, Sparkles, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { Member } from '../types';
 import { api } from '../lib/supabase';
 import { differenceInDays } from 'date-fns';
 
-export type TabId = '홈' | '보드' | '달력' | '북마크' | '멤버' | '발표자료' | '업데이트';
+export type TabId = '홈' | '보드' | '책' | '달력' | '북마크' | '멤버' | '발표자료' | '업데이트';
 
 interface SidebarProps {
   currentMember: Member;
@@ -18,6 +18,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
   const menuItems: { icon: any, label: TabId }[] = [
     { icon: Home, label: '홈' },
     { icon: LayoutDashboard, label: '보드' },
+    { icon: BookOpen, label: '책' },
     { icon: CalendarIcon, label: '달력' },
     { icon: Mic, label: '발표자료' },
     { icon: Users, label: '멤버' },
