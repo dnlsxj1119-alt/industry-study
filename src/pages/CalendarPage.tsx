@@ -63,25 +63,34 @@ export function CalendarPage({ posts, currentMember, commentCounts, bookmarkedPo
             const dayPosts = getDayPosts(day);
             const sortedDayPosts = [...dayPosts].sort((a, b) => a.author.localeCompare(b.author));
             const isSelected = isSameDay(day, selectedDate);
-            
+            const dayTotalPoints = sortedDayPosts.reduce((sum, p) => sum + (p.contribution_point ?? 1), 0);
+
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 onClick={() => setSelectedDate(day)}
-                title={sortedDayPosts.map(p => `${p.author}: ${p.title}`).join('\n')}
+                title={sortedDayPosts.map(p => `${p.author} (+${p.contribution_point ?? 1}): ${p.title}`).join('\n')}
                 className={cn(
-                  "p-1 md:p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border",
+                  "p-1 md:p-2 aspect-square flex flex-col justify-center items-center rounded-xl cursor-pointer transition-all border relative",
                   !isSameMonth(day, monthStart) ? "text-gray-300 bg-transparent border-transparent" : "text-gray-700 bg-gray-50 hover:bg-gray-100 border-transparent",
                   isSelected && "bg-primary-50 text-primary-700 border-primary-200 font-bold shadow-sm"
                 )}
               >
+                {dayTotalPoints > 0 && (
+                  <span className="absolute top-0.5 right-0.5 text-[8px] md:text-[9px] font-bold text-primary-700 bg-primary-100 rounded-full px-1 leading-tight">
+                    +{dayTotalPoints}
+                  </span>
+                )}
                 <span className="text-sm">{format(day, dateFormat)}</span>
                 <div className="flex flex-wrap gap-[3px] mt-1.5 min-h-[6px] items-center justify-center max-w-[80%]">
                   {sortedDayPosts.map(post => (
-                    <span 
-                      key={post.id} 
-                      className={cn("w-1.5 h-1.5 rounded-full shrink-0", getMemberBgClass(post.author))}
-                    ></span>
+                    <span
+                      key={post.id}
+                      title={`${post.author} +${post.contribution_point ?? 1}`}
+                      className={cn("min-w-[12px] h-[12px] px-[2px] rounded-full text-white text-[7px] font-bold flex items-center justify-center shrink-0 leading-none", getMemberBgClass(post.author))}
+                    >
+                      +{post.contribution_point ?? 1}
+                    </span>
                   ))}
                 </div>
               </div>

@@ -131,6 +131,12 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
     year: 'numeric', month: 'long', day: 'numeric'
   }) : '날짜 미지정';
   const isEdited = post.updated_at && post.updated_at !== post.created_at;
+  const contributionPoint = post.contribution_point ?? 1;
+  const pointColors: Record<number, string> = {
+    1: 'bg-gray-100 text-gray-700 border-gray-200',
+    2: 'bg-amber-100 text-amber-800 border-amber-200',
+    3: 'bg-rose-100 text-rose-800 border-rose-200',
+  };
 
   return (
     <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
@@ -148,6 +154,9 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
             <div className="flex items-center space-x-2 mb-2">
               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-semibold">
                 {post.category}
+              </span>
+              <span className={cn("px-2 py-1 rounded-md text-xs font-bold border", pointColors[contributionPoint] || pointColors[1])} title="기여도">
+                +{contributionPoint}
               </span>
               <span className="text-gray-400 text-sm">출처: {post.source}</span>
             </div>

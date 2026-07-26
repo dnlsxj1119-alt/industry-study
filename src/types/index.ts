@@ -16,6 +16,7 @@ export interface Post {
   tags: string[];
   author: Member;
   study_date: string;
+  contribution_point: number;
   created_at: string;
   updated_at: string;
 }

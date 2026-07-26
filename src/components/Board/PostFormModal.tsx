@@ -3,6 +3,7 @@ import { Post, Category, Member } from '../../types';
 import { X, Plus, CalendarIcon } from 'lucide-react';
 import { RichTextEditor } from '../RichTextEditor';
 import { api } from '../../lib/supabase';
+import { cn } from '../../lib/utils';
 
 interface PostFormModalProps {
   currentMember: Member;
@@ -23,6 +24,7 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
   const [category, setCategory] = useState<string>(editPost?.category || '반도체');
   const [tagsInput, setTagsInput] = useState(editPost?.tags.join(', ') || '');
   const [studyDate, setStudyDate] = useState(editPost?.study_date || new Date().toISOString().split('T')[0]);
+  const [contributionPoint, setContributionPoint] = useState<number>(editPost?.contribution_point || 1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -49,6 +51,7 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
         category,
         tags,
         study_date: studyDate,
+        contribution_point: contributionPoint,
       });
     } else {
       await api.addPost({
@@ -61,6 +64,7 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
         category,
         tags,
         study_date: studyDate,
+        contribution_point: contributionPoint,
         author: currentMember,
       });
     }
@@ -162,6 +166,28 @@ export function PostFormModal({ currentMember, editPost, categories, onAddCatego
               <label className="text-sm font-semibold text-gray-700">출처 (언론사 등)</label>
               <input value={source} onChange={e => setSource(e.target.value)} type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors" placeholder="예: Bloomberg" />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-gray-700">기여도 (Point)</label>
+            <div className="flex gap-2">
+              {[1, 2, 3].map(point => (
+                <button
+                  key={point}
+                  type="button"
+                  onClick={() => setContributionPoint(point)}
+                  className={cn(
+                    "flex-1 px-4 py-2.5 rounded-xl text-sm font-bold border transition-colors",
+                    contributionPoint === point
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                  )}
+                >
+                  +{point}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">기사의 난이도/분량에 따라 기여도를 선택해주세요 (기본값 1점)</p>
           </div>
 
           <div className="space-y-1">

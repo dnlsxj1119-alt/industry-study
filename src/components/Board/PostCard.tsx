@@ -34,6 +34,13 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, hasC
 
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko });
 
+  const contributionPoint = post.contribution_point ?? 1;
+  const pointColors: Record<number, string> = {
+    1: 'bg-gray-100 text-gray-700 border-gray-200',
+    2: 'bg-amber-100 text-amber-800 border-amber-200',
+    3: 'bg-rose-100 text-rose-800 border-rose-200',
+  };
+
   return (
     <div 
       onClick={onClick}
@@ -42,9 +49,14 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, hasC
       {/* Top Accent Line */}
       <div className={cn("absolute top-0 left-0 right-0 h-1", getMemberColorClasses(post.author).split(' ')[0])} />
       <div className="flex justify-between items-start mb-3">
-        <span className={cn("px-2.5 py-1 rounded-md text-xs font-semibold border", categoryColors[post.category] || categoryColors['경제/시장'])}>
-          {post.category}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className={cn("px-2.5 py-1 rounded-md text-xs font-semibold border", categoryColors[post.category] || categoryColors['경제/시장'])}>
+            {post.category}
+          </span>
+          <span className={cn("px-2 py-1 rounded-md text-xs font-bold border", pointColors[contributionPoint] || pointColors[1])} title="기여도">
+            +{contributionPoint}
+          </span>
+        </div>
         <div className="flex items-center space-x-2">
           {post.author === currentMember && (
             <button

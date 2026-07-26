@@ -47,9 +47,11 @@ export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
     return isSameWeek(dateToUse, now, { weekStartsOn: 1 }); // Assuming week starts on Monday
   });
 
-  // Calculate uploads per member
+  // Calculate contribution points per member (falls back to 1 point per post for legacy data)
   const uploadsByMember = members.reduce((acc, member) => {
-    acc[member] = thisWeekPosts.filter(p => p.author === member).length;
+    acc[member] = thisWeekPosts
+      .filter(p => p.author === member)
+      .reduce((sum, p) => sum + (p.contribution_point ?? 1), 0);
     return acc;
   }, {} as Record<Member, number>);
 
@@ -59,12 +61,12 @@ export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
     <div className="bg-white rounded-2xl p-5 card-shadow border border-gray-100 relative">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-bold text-gray-900">
-          이번 주 멤버별 업로드 현황
+          이번 주 멤버별 기여도 현황
         </h3>
-        
+
         <div className="flex items-center space-x-2">
           <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
-            목표: {targetPerMember}회
+            목표: {targetPerMember}점
           </span>
           {isAdmin && (
             <button 
@@ -132,7 +134,7 @@ export function WeeklyStatus({ posts, currentMember }: WeeklyStatusProps) {
             
             <div className="p-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                목표 인증 개수
+                목표 기여도 (점)
               </label>
               <input
                 type="number"
