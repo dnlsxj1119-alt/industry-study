@@ -104,13 +104,20 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
-        <button
-          onClick={() => setWeekOffset(0)}
-          className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
-          title="이번 주로 이동"
-        >
-          {format(weekStart, 'M/d')} - {format(weekEnd, 'M/d')}
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-500">
+            {format(weekStart, 'M/d')} - {format(weekEnd, 'M/d')}
+          </span>
+          {!isCurrentWeek && (
+            <button
+              onClick={() => setWeekOffset(0)}
+              className="text-[10px] font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-1.5 py-0.5 rounded-md border border-primary-100 transition-colors"
+              title="이번 주로 이동"
+            >
+              이번 주로
+            </button>
+          )}
+        </div>
         <button
           onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
           disabled={isCurrentWeek}
