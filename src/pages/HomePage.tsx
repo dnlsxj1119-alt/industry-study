@@ -15,9 +15,10 @@ interface HomePageProps {
   onPostClick: (post: Post) => void;
   onEdit: (post: Post) => void;
   onGoToUpdates: () => void;
+  onTagClick?: (tag: string) => void;
 }
 
-export function HomePage({ posts, books = [], currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onGoToUpdates }: HomePageProps) {
+export function HomePage({ posts, books = [], currentMember, commentCounts, bookmarkedPostIds, onToggleBookmark, onPostClick, onEdit, onGoToUpdates, onTagClick }: HomePageProps) {
   const recentPosts = posts.slice(0, 4);
 
   return (
@@ -57,7 +58,7 @@ export function HomePage({ posts, books = [], currentMember, commentCounts, book
 
       <div className="w-full lg:w-80 flex flex-col gap-6 shrink-0">
         <WeeklyStatus posts={posts} books={books} currentMember={currentMember} />
-        <InsightTags posts={posts} />
+        <InsightTags posts={posts} onTagClick={onTagClick} />
       </div>
     </div>
   );

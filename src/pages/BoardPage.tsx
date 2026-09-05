@@ -16,6 +16,8 @@ interface BoardPageProps {
   onPostClick: (post: Post) => void;
   onEdit: (post: Post) => void;
   categories: string[];
+  activeTagFilter?: string | null;
+  onClearTagFilter?: () => void;
 }
 
 export function BoardPage({
@@ -29,17 +31,23 @@ export function BoardPage({
   onToggleBookmark,
   onPostClick,
   onEdit,
-  categories
+  categories,
+  activeTagFilter,
+  onClearTagFilter
 }: BoardPageProps) {
   const [showUncommentedOnly, setShowUncommentedOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchContent, setSearchContent] = useState(false);
   const [searchOpinion, setSearchOpinion] = useState(false);
   const allCategories: Category[] = ['전체', ...categories];
-  
-  let filteredPosts = activeCategory === '전체' 
-    ? posts 
+
+  let filteredPosts = activeCategory === '전체'
+    ? posts
     : posts.filter(p => p.category === activeCategory);
+
+  if (activeTagFilter) {
+    filteredPosts = filteredPosts.filter(p => p.tags?.includes(activeTagFilter));
+  }
 
   if (showUncommentedOnly) {
     filteredPosts = filteredPosts.filter(p => {
@@ -83,6 +91,21 @@ export function BoardPage({
           <span className="text-sm font-medium text-gray-700">내 댓글 미작성 기사만 보기</span>
         </label>
       </div>
+
+      {activeTagFilter && (
+        <div className="mb-4 flex items-center">
+          <span className="inline-flex items-center px-3 py-1.5 bg-primary-50 border border-primary-200 text-primary-700 rounded-lg text-sm font-medium">
+            #{activeTagFilter} 태그로 필터링 중
+            <button
+              onClick={onClearTagFilter}
+              className="ml-2 text-primary-500 hover:text-primary-800"
+              aria-label="태그 필터 해제"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </span>
+        </div>
+      )}
 
       <div className="mb-6">
         <div className="relative">
@@ -149,7 +172,11 @@ export function BoardPage({
         {filteredPosts.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
             <p className="text-gray-500">
-              {searchQuery ? "검색 결과가 없습니다" : "이 카테고리에 아직 공유된 기사가 없습니다."}
+              {searchQuery
+                ? "검색 결과가 없습니다"
+                : activeTagFilter
+                  ? `#${activeTagFilter} 태그가 달린 기사가 없습니다.`
+                  : "이 카테고리에 아직 공유된 기사가 없습니다."}
             </p>
           </div>
         )}

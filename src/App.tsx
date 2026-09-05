@@ -43,6 +43,7 @@ function App() {
   const [bookmarkedPostIds, setBookmarkedPostIds] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<string[]>(['반도체', 'AI', '자동차', '배터리', '전력/에너지', '경제/시장']);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
 
   // Check localStorage for saved member on initial load
   useEffect(() => {
@@ -110,6 +111,12 @@ function App() {
     }
   }, [currentMember]);
 
+  const handleTagClick = (tag: string) => {
+    setActiveTagFilter(tag);
+    setActiveCategory('전체');
+    setCurrentTab('보드');
+  };
+
   const handleToggleBookmark = async (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
     if (!currentMember) return;
@@ -156,7 +163,7 @@ function App() {
 
     switch (currentTab) {
       case '홈':
-        return <HomePage {...commonProps} onGoToUpdates={() => setCurrentTab('업데이트')} />;
+        return <HomePage {...commonProps} onGoToUpdates={() => setCurrentTab('업데이트')} onTagClick={handleTagClick} />;
       case '보드':
         return (
           <BoardPage
@@ -164,6 +171,8 @@ function App() {
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
             categories={categories}
+            activeTagFilter={activeTagFilter}
+            onClearTagFilter={() => setActiveTagFilter(null)}
           />
         );
       case '책':

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Post, Book, Member, WeeklyGoal } from '../../types';
 import { MEMBERS, ADMIN_MEMBER } from '../../constants/members';
 import { cn, getMemberColorClasses, getMemberBgClass, getMemberTextClass } from '../../lib/utils';
-import { isSameWeek, startOfWeek, format } from 'date-fns';
+import { isSameWeek, startOfWeek, endOfWeek, subWeeks, format } from 'date-fns';
 import { api } from '../../lib/supabase';
-import { Edit2, X } from 'lucide-react';
+import { Edit2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface WeeklyStatusProps {
   posts: Post[];
@@ -17,10 +17,14 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
   const [targetPerMember, setTargetPerMember] = useState(5);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(5);
-  
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = 이번 주, 1 = 지난 주, ...
+
   const now = new Date();
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const referenceDate = subWeeks(now, weekOffset);
+  const weekStart = startOfWeek(referenceDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(referenceDate, { weekStartsOn: 1 });
   const weekStartDateStr = format(weekStart, 'yyyy-MM-dd');
+  const isCurrentWeek = weekOffset === 0;
 
   useEffect(() => {
     const fetchGoal = async () => {
@@ -41,18 +45,18 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
     }
   };
   
-  // Filter posts for this week using study_date
+  // Filter posts for the selected week using study_date
   const thisWeekPosts = posts.filter(p => {
     // Fallback to created_at if study_date doesn't exist yet (for safety)
     const dateToUse = p.study_date ? new Date(p.study_date) : new Date(p.created_at);
-    return isSameWeek(dateToUse, now, { weekStartsOn: 1 }); // Assuming week starts on Monday
+    return isSameWeek(dateToUse, referenceDate, { weekStartsOn: 1 }); // Assuming week starts on Monday
   });
 
   // Only 읽는 중 / 완독 books have a study_date and count toward contribution stats
   // ('읽고 싶은 책' entries are excluded entirely).
   const thisWeekBooks = books.filter(b => {
     if (b.status === '읽고 싶은 책' || !b.study_date) return false;
-    return isSameWeek(new Date(b.study_date), now, { weekStartsOn: 1 });
+    return isSameWeek(new Date(b.study_date), referenceDate, { weekStartsOn: 1 });
   });
 
   // Calculate contribution points per member (falls back to 1 point per post for legacy data)
@@ -71,17 +75,17 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
 
   return (
     <div className="bg-white rounded-2xl p-5 card-shadow border border-gray-100 relative">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-1">
         <h3 className="text-sm font-bold text-gray-900">
-          이번 주 멤버별 기여도 현황
+          {isCurrentWeek ? '이번 주 멤버별 기여도 현황' : '멤버별 기여도 현황'}
         </h3>
 
         <div className="flex items-center space-x-2">
           <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
             목표: {targetPerMember}점
           </span>
-          {isAdmin && (
-            <button 
+          {isAdmin && isCurrentWeek && (
+            <button
               onClick={() => setIsEditing(true)}
               className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
               title="주간 목표 설정"
@@ -90,6 +94,31 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
             </button>
           )}
         </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setWeekOffset(prev => prev + 1)}
+          className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+          title="지난 주"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setWeekOffset(0)}
+          className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+          title="이번 주로 이동"
+        >
+          {format(weekStart, 'M/d')} - {format(weekEnd, 'M/d')}
+        </button>
+        <button
+          onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
+          disabled={isCurrentWeek}
+          className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 disabled:cursor-not-allowed"
+          title="다음 주"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="space-y-4">

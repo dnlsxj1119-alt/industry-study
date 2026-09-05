@@ -4,9 +4,10 @@ import { Post } from '../../types';
 
 interface InsightTagsProps {
   posts: Post[];
+  onTagClick?: (tag: string) => void;
 }
 
-export function InsightTags({ posts }: InsightTagsProps) {
+export function InsightTags({ posts, onTagClick }: InsightTagsProps) {
   // Extract and count tags
   const tagCounts = posts.reduce((acc, post) => {
     post.tags.forEach(tag => {
@@ -30,8 +31,9 @@ export function InsightTags({ posts }: InsightTagsProps) {
       <div className="flex flex-wrap gap-2">
         {sortedTags.length > 0 ? (
           sortedTags.map(([tag, count]) => (
-            <button 
+            <button
               key={tag}
+              onClick={() => onTagClick?.(tag)}
               className="px-3 py-1.5 bg-gray-50 hover:bg-primary-50 border border-gray-100 hover:border-primary-200 text-gray-700 hover:text-primary-700 rounded-lg text-xs font-medium transition-colors flex items-center"
             >
               #{tag}
