@@ -9,6 +9,9 @@ import { ko } from 'date-fns/locale';
 import { RichTextEditor } from '../components/RichTextEditor';
 import { HtmlRenderer } from '../components/HtmlRenderer';
 
+// 이 날짜(포함) 이후의 주차는 멤버가 4명이라 한 줄에 4개씩 배치한다
+const FOUR_COLUMN_START_DATE = '2026.09.19';
+
 interface PresentationPageProps {
   currentMember: Member;
 }
@@ -207,6 +210,8 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
       <div className="space-y-10">
         {sortedWeeks.map(weekKey => {
           const [weekStr, dateStr] = weekKey.split('|');
+          // 2026.09.19 (9월 3주차)부터 인원이 4명으로 늘어 한 줄에 4개씩 보여준다
+          const isFourColumnWeek = dateStr >= FOUR_COLUMN_START_DATE;
           return (
           <div key={weekKey} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="flex items-baseline space-x-2 mb-4 pl-1">
@@ -217,7 +222,7 @@ export function PresentationPage({ currentMember }: PresentationPageProps) {
               </h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isFourColumnWeek ? 'xl:grid-cols-4' : 'xl:grid-cols-3'}`}>
               {groupedPresentations[weekKey].map(p => (
                 <div 
                   key={p.id} 
