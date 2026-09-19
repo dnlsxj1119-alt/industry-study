@@ -23,7 +23,7 @@ export function Layout({ children, currentMember, onChangeMember, currentTab, on
       
       <main className="flex-1 flex flex-col md:flex-row pb-20 md:pb-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto h-screen p-4 md:p-8">
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-6xl mx-auto w-full">
             {children}
           </div>
         </div>
