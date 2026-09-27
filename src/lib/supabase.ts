@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Post, Comment, Bookmark, Presentation, AppUpdate, Book } from '../types';
+import { DEFAULT_WEEKLY_GOAL } from '../constants/goals';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -378,7 +379,7 @@ export const api = {
 
   // --- Weekly Goals ---
   async getWeeklyGoal(weekStartDate: string): Promise<number> {
-    if (!isSupabaseConfigured) return 5; // Default fallback
+    if (!isSupabaseConfigured) return DEFAULT_WEEKLY_GOAL; // Default fallback
     
     const { data, error } = await supabase
       .from('weekly_goals')
@@ -387,11 +388,11 @@ export const api = {
       .single();
       
     if (error) {
-      // If no row exists or error, default to 5
-      return 5;
+      // If no row exists or error, fall back to the default goal
+      return DEFAULT_WEEKLY_GOAL;
     }
     
-    return data ? data.target_count : 5;
+    return data ? data.target_count : DEFAULT_WEEKLY_GOAL;
   },
 
   async setWeeklyGoal(weekStartDate: string, targetCount: number) {

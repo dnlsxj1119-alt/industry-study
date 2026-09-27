@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Post, Book, Member, WeeklyGoal } from '../../types';
 import { MEMBERS, ADMIN_MEMBER } from '../../constants/members';
+import { DEFAULT_WEEKLY_GOAL } from '../../constants/goals';
 import { cn, getMemberColorClasses, getMemberBgClass, getMemberTextClass } from '../../lib/utils';
 import { isSameWeek, startOfWeek, endOfWeek, subWeeks, format } from 'date-fns';
 import { api } from '../../lib/supabase';
@@ -14,9 +15,9 @@ interface WeeklyStatusProps {
 
 export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusProps) {
   const members: Member[] = [...MEMBERS];
-  const [targetPerMember, setTargetPerMember] = useState(5);
+  const [targetPerMember, setTargetPerMember] = useState(DEFAULT_WEEKLY_GOAL);
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(5);
+  const [editValue, setEditValue] = useState(DEFAULT_WEEKLY_GOAL);
   const [weekOffset, setWeekOffset] = useState(0); // 0 = 이번 주, 1 = 지난 주, ...
 
   const now = new Date();
@@ -145,15 +146,18 @@ export function WeeklyStatus({ posts, books = [], currentMember }: WeeklyStatusP
                   </div>
                   <span className={cn("text-sm font-bold", getMemberTextClass(member))}>{member}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-end flex-wrap gap-x-1.5 gap-y-1">
                   <span className="text-xs font-bold text-gray-600">
                     {count} / {targetPerMember}
                   </span>
-                  {overAchievement ? (
-                    <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded-md border border-primary-100">{overPercentage}% 초과달성🔥</span>
-                  ) : isDone ? (
-                    <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-md">완료</span>
-                  ) : null}
+                  {overAchievement && (
+                    <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded-md border border-primary-100">{overPercentage}%🔥</span>
+                  )}
+                  {isDone && (
+                    <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full border border-rose-200 animate-in zoom-in duration-300">
+                      참 잘했어요 💮
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
