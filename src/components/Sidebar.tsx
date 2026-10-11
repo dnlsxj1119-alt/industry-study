@@ -15,13 +15,20 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab }: SidebarProps) {
-  const menuItems: { icon: any, label: TabId }[] = [
+  type MenuItem = { icon: React.ComponentType<{ className?: string }>, label: TabId };
+
+  // Main content tabs
+  const menuItems: MenuItem[] = [
     { icon: Home, label: '홈' },
     { icon: LayoutDashboard, label: '보드' },
     { icon: BookOpen, label: '책' },
     { icon: CalendarIcon, label: '달력' },
-    { icon: BookmarkIcon, label: '북마크' },
     { icon: Mic, label: '발표자료' },
+  ];
+
+  // Secondary tabs shown in the bottom section, above 업데이트
+  const secondaryItems: MenuItem[] = [
+    { icon: BookmarkIcon, label: '북마크' },
     { icon: Users, label: '멤버' },
   ];
 
@@ -61,6 +68,24 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
     return () => window.removeEventListener('updates_seen', handleUpdatesSeen);
   }, [currentMember]);
 
+  const renderMenuItem = (item: MenuItem) => (
+    <button
+      key={item.label}
+      onClick={() => onChangeTab(item.label)}
+      title={collapsed ? item.label : undefined}
+      className={cn(
+        "flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium",
+        collapsed && "justify-center px-0",
+        currentTab === item.label
+          ? "bg-primary-50 text-primary-600"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      )}
+    >
+      <item.icon className={cn("w-5 h-5 shrink-0", !collapsed && "mr-3", currentTab === item.label ? "text-primary-600" : "text-gray-400")} />
+      {!collapsed && item.label}
+    </button>
+  );
+
   return (
     <aside
       className={cn(
@@ -86,26 +111,11 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
       </div>
 
       <nav className="flex-1 px-4 space-y-2">
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => onChangeTab(item.label)}
-            title={collapsed ? item.label : undefined}
-            className={cn(
-              "flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium",
-              collapsed && "justify-center px-0",
-              currentTab === item.label
-                ? "bg-primary-50 text-primary-600"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            )}
-          >
-            <item.icon className={cn("w-5 h-5 shrink-0", !collapsed && "mr-3", currentTab === item.label ? "text-primary-600" : "text-gray-400")} />
-            {!collapsed && item.label}
-          </button>
-        ))}
+        {menuItems.map(renderMenuItem)}
       </nav>
 
       <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+        {secondaryItems.map(renderMenuItem)}
         <button
           onClick={() => {
             onChangeTab('업데이트');
