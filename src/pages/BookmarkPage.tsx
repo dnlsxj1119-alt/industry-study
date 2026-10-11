@@ -23,8 +23,15 @@ export function BookmarkPage({ posts, currentMember, commentCounts, bookmarkedPo
           <BookmarkIcon className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">내 북마크</h2>
-          <p className="text-sm text-gray-500 mt-1">내가 스크랩한 중요한 기사들입니다.</p>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            내 북마크
+            {bookmarkedPosts.length > 0 && (
+              <span className="text-sm font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">
+                {bookmarkedPosts.length}
+              </span>
+            )}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">{currentMember}님이 스크랩한 기사들입니다. 북마크는 본인에게만 보입니다.</p>
         </div>
       </div>
 
@@ -43,7 +50,9 @@ export function BookmarkPage({ posts, currentMember, commentCounts, bookmarkedPo
         ))}
         {bookmarkedPosts.length === 0 && (
           <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
+            <BookmarkIcon className="w-8 h-8 mx-auto text-gray-300 mb-3" />
             <p className="text-gray-500">아직 북마크한 기사가 없습니다.</p>
+            <p className="text-sm text-gray-400 mt-1">기사 카드 오른쪽 위의 북마크 아이콘을 눌러 저장해보세요.</p>
           </div>
         )}
       </div>

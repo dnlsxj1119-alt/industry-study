@@ -20,6 +20,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
     { icon: LayoutDashboard, label: '보드' },
     { icon: BookOpen, label: '책' },
     { icon: CalendarIcon, label: '달력' },
+    { icon: BookmarkIcon, label: '북마크' },
     { icon: Mic, label: '발표자료' },
     { icon: Users, label: '멤버' },
   ];

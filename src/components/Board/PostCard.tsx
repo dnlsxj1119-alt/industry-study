@@ -70,6 +70,8 @@ export function PostCard({ post, currentMember, commentCount, isBookmarked, hasC
           <button 
             onClick={(e) => { e.stopPropagation(); onBookmark(e); }}
             className={cn("p-1.5 rounded-full hover:bg-gray-100 transition-colors", isBookmarked ? "text-primary-600" : "text-gray-400")}
+            title={isBookmarked ? "북마크 해제" : "북마크"}
+            aria-pressed={isBookmarked}
           >
             <Bookmark className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} />
           </button>

@@ -120,17 +120,26 @@ function App() {
   const handleToggleBookmark = async (e: React.MouseEvent, postId: string) => {
     e.stopPropagation();
     if (!currentMember) return;
-    
-    const isNowBookmarked = await api.toggleBookmark(postId, currentMember);
-    setBookmarkedPostIds(prev => {
-      const newSet = new Set(prev);
-      if (isNowBookmarked) {
-        newSet.add(postId);
-      } else {
-        newSet.delete(postId);
-      }
-      return newSet;
-    });
+
+    const wasBookmarked = bookmarkedPostIds.has(postId);
+    const applyBookmark = (bookmarked: boolean) => {
+      setBookmarkedPostIds(prev => {
+        const newSet = new Set(prev);
+        if (bookmarked) newSet.add(postId); else newSet.delete(postId);
+        return newSet;
+      });
+    };
+
+    // Optimistic update so the icon responds immediately; revert if the save fails.
+    applyBookmark(!wasBookmarked);
+    try {
+      const isNowBookmarked = await api.toggleBookmark(postId, currentMember);
+      applyBookmark(isNowBookmarked);
+    } catch (err) {
+      console.error('Error toggling bookmark:', err);
+      applyBookmark(wasBookmarked);
+      alert('북마크 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
   };
 
   // Log fallback warning to console instead of showing UI banner
@@ -278,6 +287,8 @@ function App() {
         <PostModal 
           post={selectedPost} 
           currentMember={currentMember} 
+          isBookmarked={bookmarkedPostIds.has(selectedPost.id)}
+          onToggleBookmark={(e) => handleToggleBookmark(e, selectedPost.id)}
           onClose={() => {
             setSelectedPost(null);
             loadData(); // refresh comment counts

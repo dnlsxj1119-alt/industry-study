@@ -11,11 +11,13 @@ import { TextWithLinks } from '../TextWithLinks';
 interface PostModalProps {
   post: Post;
   currentMember: Member;
+  isBookmarked?: boolean;
+  onToggleBookmark?: (e: React.MouseEvent) => void;
   onClose: () => void;
   onEdit: (post: Post) => void;
 }
 
-export function PostModal({ post, currentMember, onClose, onEdit }: PostModalProps) {
+export function PostModal({ post, currentMember, isBookmarked = false, onToggleBookmark, onClose, onEdit }: PostModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [commentType, setCommentType] = useState<CommentType>('동의');
@@ -177,6 +179,21 @@ export function PostModal({ post, currentMember, onClose, onEdit }: PostModalPro
           </div>
           
           <div className="absolute top-4 right-4 flex items-center space-x-1">
+            {onToggleBookmark && (
+              <button
+                onClick={onToggleBookmark}
+                className={cn(
+                  "p-2 rounded-full transition-colors",
+                  isBookmarked
+                    ? "text-primary-600 bg-primary-50 hover:bg-primary-100"
+                    : "text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100"
+                )}
+                title={isBookmarked ? "북마크 해제" : "북마크"}
+                aria-pressed={isBookmarked}
+              >
+                <Bookmark className="w-5 h-5" fill={isBookmarked ? "currentColor" : "none"} />
+              </button>
+            )}
             {post.author === currentMember && (
               <>
                 <button onClick={() => { onClose(); onEdit(post); }} className="p-2 text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors" title="수정">

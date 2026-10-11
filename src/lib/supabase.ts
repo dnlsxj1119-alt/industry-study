@@ -12,6 +12,40 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder'
 );
 
+// Bookmarks persist in localStorage when Supabase is not configured so the
+// feature still works in local/fallback mode.
+const LOCAL_BOOKMARKS_KEY = 'study_board_bookmarks';
+
+function readLocalBookmarks(): Bookmark[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_BOOKMARKS_KEY);
+    return raw ? (JSON.parse(raw) as Bookmark[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function toggleLocalBookmark(postId: string, author: string): boolean {
+  const bookmarks = readLocalBookmarks();
+  const idx = bookmarks.findIndex(b => b.post_id === postId && b.author === author);
+  if (idx >= 0) {
+    bookmarks.splice(idx, 1);
+  } else {
+    bookmarks.unshift({
+      id: `local-${Date.now()}`,
+      post_id: postId,
+      author: author as Bookmark['author'],
+      created_at: new Date().toISOString(),
+    });
+  }
+  try {
+    localStorage.setItem(LOCAL_BOOKMARKS_KEY, JSON.stringify(bookmarks));
+  } catch {
+    // ignore quota / private-mode errors
+  }
+  return idx < 0;
+}
+
 export const api = {
   async getPosts(): Promise<Post[]> {
     if (!isSupabaseConfigured) {
@@ -184,11 +218,12 @@ export const api = {
   },
 
   async getBookmarks(): Promise<Bookmark[]> {
-    if (!isSupabaseConfigured) return [];
+    if (!isSupabaseConfigured) return readLocalBookmarks();
 
     const { data, error } = await supabase
       .from('bookmarks')
-      .select('*');
+      .select('*')
+      .order('created_at', { ascending: false });
       
     if (error) {
       console.error('Error fetching bookmarks:', error);
@@ -197,30 +232,41 @@ export const api = {
     return data || [];
   },
 
+  /** Returns true when the post is bookmarked after the toggle, false when it was removed. */
   async toggleBookmark(postId: string, author: string): Promise<boolean> {
-    if (!isSupabaseConfigured) return false;
+    if (!isSupabaseConfigured) return toggleLocalBookmark(postId, author);
 
-    // Check if exists
-    const { data } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from('bookmarks')
       .select('id')
       .eq('post_id', postId)
       .eq('author', author)
-      .single();
+      .maybeSingle();
 
-    if (data) {
-      // Remove
-      await supabase.from('bookmarks').delete().eq('id', data.id);
-      return false;
-    } else {
-      // Add
-      await supabase.from('bookmarks').insert([{
-        post_id: postId,
-        author,
-        created_at: new Date().toISOString()
-      }]);
-      return true;
+    if (lookupError) {
+      console.error('Error looking up bookmark:', lookupError);
+      throw lookupError;
     }
+
+    if (existing) {
+      const { error } = await supabase.from('bookmarks').delete().eq('id', existing.id);
+      if (error) {
+        console.error('Error removing bookmark:', error);
+        throw error;
+      }
+      return false;
+    }
+
+    const { error } = await supabase.from('bookmarks').insert([{
+      post_id: postId,
+      author,
+      created_at: new Date().toISOString()
+    }]);
+    if (error) {
+      console.error('Error adding bookmark:', error);
+      throw error;
+    }
+    return true;
   },
 
   async getCategories(): Promise<string[]> {
