@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Home, LayoutDashboard, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon, Mic, Sparkles, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Home, LayoutDashboard, Bookmark as BookmarkIcon, Users, Calendar as CalendarIcon, Mic, Sparkles, ChevronLeft, ChevronRight, BookOpen, Network } from 'lucide-react';
 import { cn, getMemberColorClasses, getMemberTextClass } from '../lib/utils';
 import { Member } from '../types';
 import { api } from '../lib/supabase';
 import { differenceInDays } from 'date-fns';
 
-export type TabId = '홈' | '보드' | '책' | '달력' | '북마크' | '멤버' | '발표자료' | '업데이트';
+export type TabId = '홈' | '보드' | '책' | '달력' | '북마크' | '멤버' | '발표자료' | '지도' | '업데이트';
 
 interface SidebarProps {
   currentMember: Member;
@@ -24,6 +24,7 @@ export function Sidebar({ currentMember, onChangeMember, currentTab, onChangeTab
     { icon: BookOpen, label: '책' },
     { icon: CalendarIcon, label: '달력' },
     { icon: Mic, label: '발표자료' },
+    { icon: Network, label: '지도' },
   ];
 
   // Secondary tabs shown in the bottom section, above 업데이트

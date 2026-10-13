@@ -22,6 +22,7 @@ import { PresentationPage } from './pages/PresentationPage';
 import { DiscussionPage } from './pages/DiscussionPage';
 import { MemberPage } from './pages/MemberPage';
 import { UpdatePage } from './pages/UpdatePage';
+import { MapPage } from './pages/MapPage';
 
 function App() {
   const [currentMember, setCurrentMember] = useState<Member | null>(null);
@@ -212,6 +213,8 @@ function App() {
         return <BookmarkPage {...commonProps} />;
       case '발표자료':
         return <PresentationPage currentMember={currentMember} />;
+      case '지도':
+        return <MapPage posts={posts} onPostClick={setSelectedPost} onGoToPresentations={() => setCurrentTab('발표자료')} />;
       case '업데이트':
         return <UpdatePage currentMember={currentMember} />;
       case '멤버':
@@ -269,7 +272,7 @@ function App() {
             <Plus className="w-5 h-5 md:mr-2" />
             <span className="hidden md:inline">책 등록하기</span>
           </button>
-        ) : !['발표자료', '업데이트'].includes(currentTab) && (
+        ) : !['발표자료', '지도', '업데이트'].includes(currentTab) && (
           <button
             onClick={() => { setEditingPost(undefined); setIsFormOpen(true); }}
             className="flex items-center px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all shadow-sm hover:shadow active:scale-95 pointer-events-auto"
