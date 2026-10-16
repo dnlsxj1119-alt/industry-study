@@ -121,6 +121,7 @@ function labelPropagation(ids: string[], adj: Map<string, { id: string; w: numbe
 
 export function MapPage({ posts, onPostClick, onGoToPresentations }: MapPageProps) {
   const [presentations, setPresentations] = useState<Presentation[]>([]);
+  const [presLoaded, setPresLoaded] = useState(false);
   const [vectors, setVectors] = useState<Record<string, number[]>>({});
   const [status, setStatus] = useState<{ done: number; total: number; modelPct?: number } | null>(null);
   const [error, setError] = useState('');
@@ -134,7 +135,10 @@ export function MapPage({ posts, onPostClick, onGoToPresentations }: MapPageProp
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    api.getPresentations().then(setPresentations).catch(console.error);
+    api.getPresentations()
+      .then(setPresentations)
+      .catch(console.error)
+      .finally(() => setPresLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -170,10 +174,21 @@ export function MapPage({ posts, onPostClick, onGoToPresentations }: MapPageProp
   const itemKey = useMemo(() => items.map(i => i.id + i.text.length).join('|'), [items]);
 
   useEffect(() => {
-    if (!items.length) return;
+    // wait for presentations too, otherwise a posts-only run starts first and competes for CPU
+    if (!items.length || !presLoaded) return;
     let cancelled = false;
-    embedItems(items.map(i => ({ id: i.id, text: i.text })), (done, total, modelPct) => {
-      if (!cancelled) setStatus({ done, total, modelPct });
+    let lastPartial = 0;
+    embedItems(items.map(i => ({ id: i.id, text: i.text })), {
+      onProgress: (done, total, modelPct) => {
+        if (!cancelled) setStatus({ done, total, modelPct });
+      },
+      onPartial: v => {
+        // redraw at most every 2s so the layout doesn't jump on every batch
+        if (cancelled || Date.now() - lastPartial < 2000) return;
+        lastPartial = Date.now();
+        setVectors(v);
+      },
+      isCancelled: () => cancelled,
     })
       .then(v => { if (!cancelled) { setVectors(v); setStatus(null); setError(''); } })
       .catch(err => {
@@ -182,7 +197,7 @@ export function MapPage({ posts, onPostClick, onGoToPresentations }: MapPageProp
       });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey, presLoaded]);
 
   const graph = useMemo(() => {
     const visible = items.filter(i => (i.kind === 'post' ? showPosts : showPres) && vectors[i.id]);
@@ -339,12 +354,21 @@ export function MapPage({ posts, onPostClick, onGoToPresentations }: MapPageProp
       <div className="flex flex-col lg:flex-row gap-4">
         <div ref={wrapRef} className="relative flex-1 h-[560px] bg-white rounded-2xl border border-gray-100 card-shadow overflow-hidden">
           {empty && <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">등록된 기사나 발표가 없어요.</div>}
-          {loading && (
+          {loading && graph.nodes.length === 0 && (
             <div className="absolute inset-0 z-10 bg-white/85 flex flex-col items-center justify-center gap-2 text-sm text-gray-600">
               <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
-              {status!.modelPct !== undefined && status!.done === 0
-                ? <>AI 모델 준비 중… {Math.round(status!.modelPct)}% <span className="text-xs text-gray-400">(처음 한 번만, 이후 저장돼요)</span></>
+              {status!.modelPct !== undefined && status!.modelPct < 100
+                ? <>AI 모델 다운로드 중… {Math.round(status!.modelPct)}% <span className="text-xs text-gray-400">(118MB, 이 컴퓨터에서 처음 한 번만)</span></>
                 : <>내용 분석 중… {status!.done} / {status!.total}</>}
+            </div>
+          )}
+          {loading && graph.nodes.length > 0 && (
+            // map stays usable; new posts appear as they are analyzed
+            <div className="absolute top-3 left-3 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/95 border border-gray-200 rounded-lg text-xs text-gray-600 shadow-sm">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary-600" />
+              {status!.modelPct !== undefined && status!.modelPct < 100
+                ? <>새 글 {status!.total - status!.done}개 분석용 AI 모델 다운로드 중… {Math.round(status!.modelPct)}% (118MB, 처음 한 번만)</>
+                : <>새 글 분석 중 {status!.done} / {status!.total}</>}
             </div>
           )}
           {error && <div className="absolute inset-0 flex items-center justify-center text-sm text-red-500 px-6 text-center">{error}</div>}

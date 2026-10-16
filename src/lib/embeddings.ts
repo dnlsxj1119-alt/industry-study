@@ -17,8 +17,9 @@ function getExtractor(onProgress?: (pct: number) => void): Promise<Extractor> {
   if (!extractorPromise) {
     extractorPromise = import('@huggingface/transformers').then(async ({ pipeline }) => {
       const pipe = await pipeline('feature-extraction', MODEL, {
+        // progress_total aggregates all model files (~118MB), so the bar doesn't jump per file
         progress_callback: (p: { status?: string; progress?: number }) => {
-          if (p.status === 'progress' && typeof p.progress === 'number') onProgress?.(p.progress);
+          if (p.status === 'progress_total' && typeof p.progress === 'number') onProgress?.(p.progress);
         },
       });
       return pipe as unknown as Extractor;
@@ -57,9 +58,17 @@ export interface EmbedItem {
   text: string;
 }
 
+export interface EmbedOptions {
+  onProgress: (done: number, total: number, modelPct?: number) => void;
+  // receives every vector ready so far, so the map can draw while the rest are computed
+  onPartial?: (vectors: Record<string, number[]>) => void;
+  // stops the run early, e.g. when the item list changes and a new run starts
+  isCancelled?: () => boolean;
+}
+
 export async function embedItems(
   items: EmbedItem[],
-  onProgress: (done: number, total: number, modelPct?: number) => void
+  { onProgress, onPartial, isCancelled = () => false }: EmbedOptions
 ): Promise<Record<string, number[]>> {
   const cache = readCache();
   const result: Record<string, number[]> = {};
@@ -85,6 +94,7 @@ export async function embedItems(
   }
 
   onProgress(items.length - todo.length, items.length);
+  onPartial?.({ ...result });
   if (todo.length === 0) {
     pruneAndSave(cache, items);
     return result;
@@ -94,6 +104,11 @@ export async function embedItems(
 
   const BATCH = 8;
   for (let i = 0; i < todo.length; i += BATCH) {
+    if (isCancelled()) {
+      // keep what was computed, but don't prune: this run may have seen a partial item list
+      writeCache(cache);
+      return result;
+    }
     const batch = todo.slice(i, i + BATCH);
     const out = await extractor(batch.map(b => `passage: ${b.text}`), { pooling: 'mean', normalize: true });
     const vecs = out.tolist();
@@ -104,6 +119,7 @@ export async function embedItems(
     });
     if (isSupabaseConfigured) await saveShared(batch.map(b => ({ id: b.id, hash: b.h, vector: result[b.id] })));
     onProgress(items.length - todo.length + i + batch.length, items.length);
+    onPartial?.({ ...result });
     await new Promise(r => setTimeout(r, 0));
   }
 
